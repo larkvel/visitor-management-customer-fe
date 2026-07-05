@@ -11,9 +11,9 @@ import {
   UserPlus,
   Users
 } from "lucide-react";
-import Metric from "../Metric";
-import StatusBadge from "../StatusBadge";
-import { can } from "../../utils/helpers";
+import Metric from "./Metric";
+import StatusBadge from "./StatusBadge";
+import { can } from "../utils/helpers";
 
 export default function CompanyDashboard(props) {
   const canCreateVisit = can(props.activeUser, "create_visit");
