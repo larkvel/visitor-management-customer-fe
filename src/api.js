@@ -1,4 +1,4 @@
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:3000";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "https://api-visit.larkvel.com";
 
 async function request(path, options = {}) {
   const response = await fetch(`${API_BASE_URL}${path}`, {
@@ -48,10 +48,10 @@ export const api = {
   }),
   checkIn: (visitId, actorUserId) => request(`/api/visits/${visitId}/check-in`, {
     method: "POST",
-    body: JSON.stringify({ actorUserId })
+    body: JSON.stringify({ actor_user_id: actorUserId })
   }),
   checkOut: (visitId, actorUserId) => request(`/api/visits/${visitId}/check-out`, {
     method: "POST",
-    body: JSON.stringify({ actorUserId })
+    body: JSON.stringify({ actor_user_id: actorUserId })
   })
 };
