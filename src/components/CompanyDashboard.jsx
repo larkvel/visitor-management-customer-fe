@@ -98,3 +98,10 @@ export default function CompanyDashboard(props) {
                 </label>
               </div>
               <button className="primaryButton" type="submit"><UserCog size={18} />Add user</button>
+            </form>
+          )}
+        </div>
+      </section>
+    </>
+  );
+}
