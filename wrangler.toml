@@ -4,6 +4,7 @@ main = "dist"
 
 [env.production]
 routes = [
+  { pattern = "larkvel.com/*", zone_name = "larkvel.com" },
   { pattern = "*.larkvel.com/*", zone_name = "larkvel.com" }
 ]
 vars = { VITE_API_BASE_URL = "https://api-visit.larkvel.com" }
