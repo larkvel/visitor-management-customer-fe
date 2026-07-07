@@ -1,9 +1,24 @@
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "https://api-visit.larkvel.com";
 
+function getToken() {
+  try {
+    const hostname = window.location.hostname;
+    const parts = hostname.split(".");
+    const subdomain = parts.length >= 3 ? parts[0] : new URLSearchParams(window.location.search).get("company");
+    if (subdomain) {
+      const session = JSON.parse(localStorage.getItem(`vm_session_${subdomain}`) || "null");
+      return session?.token || null;
+    }
+  } catch { /* ignore */ }
+  return null;
+}
+
 async function request(path, options = {}) {
+  const token = getToken();
   const response = await fetch(`${API_BASE_URL}${path}`, {
     headers: {
       "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
       ...options.headers
     },
     ...options
@@ -19,54 +34,23 @@ async function request(path, options = {}) {
 
 export const api = {
   // Auth
-  registerCompany: (payload) => request("/api/auth/register", {
-    method: "POST",
-    body: JSON.stringify(payload)
-  }),
-  checkSubdomainAvailable: (subdomain) => request("/api/auth/register/verify-subdomain", {
-    method: "POST",
-    body: JSON.stringify({ subdomain })
-  }),
-  
+  login: (username, password) => request("/api/auth/login", { method: "POST", body: JSON.stringify({ username, password }) }),
+  registerCompany: (payload) => request("/api/auth/register", { method: "POST", body: JSON.stringify(payload) }),
+
   // Companies
-  getPlatformDashboard: () => request("/api/platform/dashboard"),
-  listCompanies: () => request("/api/companies"),
   getCompanyBySubdomain: (subdomain) => request(`/api/companies/by-subdomain/${subdomain}`),
-  createCompany: (payload) => request("/api/companies", {
-    method: "POST",
-    body: JSON.stringify(payload)
-  }),
-  updateCompany: (companyId, payload) => request(`/api/companies/${companyId}`, {
-    method: "PUT",
-    body: JSON.stringify(payload)
-  }),
   listLocations: (companyId) => request(`/api/companies/${companyId}/locations`),
   listHosts: (companyId) => request(`/api/companies/${companyId}/hosts`),
-  
+
   // Users
   listUsers: (companyId) => request(`/api/users?companyId=${companyId}`),
-  createUser: (payload) => request("/api/users", {
-    method: "POST",
-    body: JSON.stringify(payload)
-  }),
-  
+  createUser: (payload) => request("/api/users", { method: "POST", body: JSON.stringify(payload) }),
+
   // Visits
   listVisits: (companyId) => request(`/api/visits?companyId=${companyId}`),
   getDashboard: (companyId) => request(`/api/dashboard?companyId=${companyId}`),
-  createVisit: (payload) => request("/api/visits", {
-    method: "POST",
-    body: JSON.stringify(payload)
-  }),
-  updateVisit: (visitId, payload) => request(`/api/visits/${visitId}`, {
-    method: "PUT",
-    body: JSON.stringify(payload)
-  }),
-  checkIn: (visitId, actorUserId) => request(`/api/visits/${visitId}/check-in`, {
-    method: "POST",
-    body: JSON.stringify({ actorUserId })
-  }),
-  checkOut: (visitId, actorUserId) => request(`/api/visits/${visitId}/check-out`, {
-    method: "POST",
-    body: JSON.stringify({ actorUserId })
-  })
+  createVisit: (payload) => request("/api/visits", { method: "POST", body: JSON.stringify(payload) }),
+  updateVisit: (visitId, payload) => request(`/api/visits/${visitId}`, { method: "PUT", body: JSON.stringify(payload) }),
+  checkIn: (visitId, actorUserId) => request(`/api/visits/${visitId}/check-in`, { method: "POST", body: JSON.stringify({ actorUserId }) }),
+  checkOut: (visitId, actorUserId) => request(`/api/visits/${visitId}/check-out`, { method: "POST", body: JSON.stringify({ actorUserId }) })
 };
