@@ -6,6 +6,7 @@ main = "dist"
 routes = [
   { pattern = "*.larkvel.com/*", zone_name = "larkvel.com" }
 ]
+vars = { VITE_API_BASE_URL = "https://api-visit.larkvel.com" }
 
 [build]
 command = "npm run build"
