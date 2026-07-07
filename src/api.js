@@ -18,6 +18,17 @@ async function request(path, options = {}) {
 }
 
 export const api = {
+  // Auth
+  registerCompany: (payload) => request("/api/auth/register", {
+    method: "POST",
+    body: JSON.stringify(payload)
+  }),
+  checkSubdomainAvailable: (subdomain) => request("/api/auth/register/verify-subdomain", {
+    method: "POST",
+    body: JSON.stringify({ subdomain })
+  }),
+  
+  // Companies
   getPlatformDashboard: () => request("/api/platform/dashboard"),
   listCompanies: () => request("/api/companies"),
   getCompanyBySubdomain: (subdomain) => request(`/api/companies/by-subdomain/${subdomain}`),
@@ -31,11 +42,15 @@ export const api = {
   }),
   listLocations: (companyId) => request(`/api/companies/${companyId}/locations`),
   listHosts: (companyId) => request(`/api/companies/${companyId}/hosts`),
+  
+  // Users
   listUsers: (companyId) => request(`/api/users?companyId=${companyId}`),
   createUser: (payload) => request("/api/users", {
     method: "POST",
     body: JSON.stringify(payload)
   }),
+  
+  // Visits
   listVisits: (companyId) => request(`/api/visits?companyId=${companyId}`),
   getDashboard: (companyId) => request(`/api/dashboard?companyId=${companyId}`),
   createVisit: (payload) => request("/api/visits", {
@@ -48,10 +63,10 @@ export const api = {
   }),
   checkIn: (visitId, actorUserId) => request(`/api/visits/${visitId}/check-in`, {
     method: "POST",
-    body: JSON.stringify({ actor_user_id: actorUserId })
+    body: JSON.stringify({ actorUserId })
   }),
   checkOut: (visitId, actorUserId) => request(`/api/visits/${visitId}/check-out`, {
     method: "POST",
-    body: JSON.stringify({ actor_user_id: actorUserId })
+    body: JSON.stringify({ actorUserId })
   })
 };
