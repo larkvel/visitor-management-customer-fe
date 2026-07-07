@@ -40,7 +40,9 @@ export const api = {
   // Companies
   getCompanyBySubdomain: (subdomain) => request(`/api/companies/by-subdomain/${subdomain}`),
   listLocations: (companyId) => request(`/api/companies/${companyId}/locations`),
+  createLocation: (companyId, payload) => request(`/api/companies/${companyId}/locations`, { method: "POST", body: JSON.stringify(payload) }),
   listHosts: (companyId) => request(`/api/companies/${companyId}/hosts`),
+  createHost: (companyId, payload) => request(`/api/companies/${companyId}/hosts`, { method: "POST", body: JSON.stringify(payload) }),
 
   // Users
   listUsers: (companyId) => request(`/api/users?companyId=${companyId}`),
