@@ -17,6 +17,8 @@ function getSubdomain() {
 
 const emptyVisit = { locationId: "", hostId: "", visitorName: "", visitorEmail: "", visitorPhone: "", purpose: "", expectedAt: "" };
 const emptyUser = { fullName: "", email: "", username: "", password: "", role: "executive" };
+const emptyLocation = { name: "", address: "" };
+const emptyHost = { fullName: "", email: "", department: "" };
 
 function DashboardApp({ session, onLogout }) {
   const companyId = session.user.companyId;
@@ -28,6 +30,8 @@ function DashboardApp({ session, onLogout }) {
   const [visitForm, setVisitForm] = useState({ ...emptyVisit, expectedAt: toDateTimeLocal() });
   const [editingVisitId, setEditingVisitId] = useState("");
   const [userForm, setUserForm] = useState(emptyUser);
+  const [locationForm, setLocationForm] = useState(emptyLocation);
+  const [hostForm, setHostForm] = useState(emptyHost);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
 
@@ -65,6 +69,8 @@ function DashboardApp({ session, onLogout }) {
 
   function updateUserForm(e) { setUserForm(p => ({ ...p, [e.target.name]: e.target.value })); }
   function updateVisitForm(e) { setVisitForm(p => ({ ...p, [e.target.name]: e.target.value })); }
+  function updateLocationForm(e) { setLocationForm(p => ({ ...p, [e.target.name]: e.target.value })); }
+  function updateHostForm(e) { setHostForm(p => ({ ...p, [e.target.name]: e.target.value })); }
 
   async function submitUser(e) {
     e.preventDefault(); setError("");
@@ -86,6 +92,24 @@ function DashboardApp({ session, onLogout }) {
       }
       setEditingVisitId("");
       setVisitForm({ ...emptyVisit, locationId: locations[0]?.id || "", hostId: hosts[0]?.id || "", expectedAt: toDateTimeLocal() });
+      await loadData();
+    } catch (err) { setError(err.message); }
+  }
+
+  async function submitLocation(e) {
+    e.preventDefault(); setError("");
+    try {
+      await api.createLocation(companyId, locationForm);
+      setLocationForm(emptyLocation);
+      await loadData();
+    } catch (err) { setError(err.message); }
+  }
+
+  async function submitHost(e) {
+    e.preventDefault(); setError("");
+    try {
+      await api.createHost(companyId, hostForm);
+      setHostForm(emptyHost);
       await loadData();
     } catch (err) { setError(err.message); }
   }
@@ -157,6 +181,12 @@ function DashboardApp({ session, onLogout }) {
           userForm={userForm}
           users={users}
           visits={visits}
+          locationForm={locationForm}
+          onLocationFormChange={updateLocationForm}
+          onLocationSubmit={submitLocation}
+          hostForm={hostForm}
+          onHostFormChange={updateHostForm}
+          onHostSubmit={submitHost}
           onCompanyChange={() => {}}
           onUserChange={() => {}}
           onUserFormChange={updateUserForm}
