@@ -12,7 +12,7 @@ export default function Login({ subdomain, onLogin }) {
     setLoading(true);
     setError("");
     try {
-      const result = await api.login(username, password);
+      const result = await api.login(username, password, subdomain);
       onLogin(result);
     } catch (err) {
       setError(err.message || "Invalid username or password");
