@@ -109,9 +109,19 @@ function DashboardApp({ session, onLogout }) {
     } catch (err) { setError(err.message); }
   }
 
-  if (loading) return <main className="page"><div className="loading">Loading...</div></main>;
+  if (loading) {
+    return (
+      <main className="page">
+        <div className="loading">
+          <div className="spinner" />
+          <p>Loading dashboard…</p>
+        </div>
+      </main>
+    );
+  }
 
   const activeUser = users.find(u => u.id === session.user.id) || { ...session.user, permissions: [] };
+  const initials = session.user.fullName?.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase() || "U";
 
   return (
     <main className="page">
@@ -121,33 +131,42 @@ function DashboardApp({ session, onLogout }) {
           <h1>{session.user.companyName}</h1>
         </div>
         <div className="toolbar">
-          <span style={{ fontSize: "14px", color: "#666" }}>{session.user.fullName} &middot; {session.user.role}</span>
-          <button onClick={onLogout} style={{ marginLeft: "12px", padding: "6px 14px", border: "1px solid #ddd", borderRadius: "4px", background: "white", cursor: "pointer" }}>Logout</button>
+          <div className="user-chip">
+            <div className="user-chip-avatar">{initials}</div>
+            <div>
+              <div className="user-chip-name">{session.user.fullName}</div>
+              <div className="user-chip-role">{session.user.role?.replace("_", " ")}</div>
+            </div>
+          </div>
+          <button className="logout-btn" onClick={onLogout}>Sign out</button>
         </div>
       </header>
-      {error && <div className="alert">{error}</div>}
-      <CompanyDashboard
-        activeUser={activeUser}
-        activeUserId={session.user.id}
-        dashboard={dashboard}
-        editingVisitId={editingVisitId}
-        form={visitForm}
-        hosts={hosts}
-        locations={locations}
-        selectedCompanyId={companyId}
-        companies={[{ id: companyId, name: session.user.companyName }]}
-        userForm={userForm}
-        users={users}
-        visits={visits}
-        onCompanyChange={() => {}}
-        onUserChange={() => {}}
-        onUserFormChange={updateUserForm}
-        onUserSubmit={submitUser}
-        onVisitChange={updateVisitForm}
-        onVisitEdit={startVisitEdit}
-        onVisitStatus={updateVisitStatus}
-        onVisitSubmit={submitVisit}
-      />
+
+      <div className="dash-body">
+        {error && <div className="alert">{error}</div>}
+        <CompanyDashboard
+          activeUser={activeUser}
+          activeUserId={session.user.id}
+          dashboard={dashboard}
+          editingVisitId={editingVisitId}
+          form={visitForm}
+          hosts={hosts}
+          locations={locations}
+          selectedCompanyId={companyId}
+          companies={[{ id: companyId, name: session.user.companyName }]}
+          userForm={userForm}
+          users={users}
+          visits={visits}
+          onCompanyChange={() => {}}
+          onUserChange={() => {}}
+          onUserFormChange={updateUserForm}
+          onUserSubmit={submitUser}
+          onVisitChange={updateVisitForm}
+          onVisitEdit={startVisitEdit}
+          onVisitStatus={updateVisitStatus}
+          onVisitSubmit={submitVisit}
+        />
+      </div>
     </main>
   );
 }
