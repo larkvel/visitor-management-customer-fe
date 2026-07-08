@@ -78,10 +78,14 @@ export default function CompanyDashboard(props) {
                       }
                     </select>
                   </label>
-                  <label>Host
+                  <label>Department / Host
                     <select name="hostId" value={props.form.hostId} onChange={props.onVisitChange}>
-                      <option value="">Unassigned</option>
-                      {props.hosts.map(h => <option key={h.id} value={h.id}>{h.full_name}</option>)}
+                      <option value="">Select Department / Host…</option>
+                      {props.hosts.map(h => (
+                        <option key={h.id} value={h.id}>
+                          {h.department ? `${h.department} — ${h.full_name}` : h.full_name}
+                        </option>
+                      ))}
                     </select>
                   </label>
                   <label className="wide">Purpose <input name="purpose" value={props.form.purpose} onChange={props.onVisitChange} required placeholder="Meeting / Interview / Delivery…" /></label>
@@ -106,7 +110,7 @@ export default function CompanyDashboard(props) {
                   {[
                     { key: "users",     label: `Users (${props.users.length})`,         icon: <UserCog size={14} /> },
                     { key: "locations", label: `Locations (${props.locations.length})`,  icon: <MapPin size={14} /> },
-                    { key: "hosts",     label: `Hosts (${props.hosts.length})`,          icon: <Users size={14} /> },
+                    { key: "hosts",     label: `Departments (${props.hosts.length})`,    icon: <Users size={14} /> },
                   ].map(tab => (
                     <button
                       key={tab.key}
@@ -195,32 +199,34 @@ export default function CompanyDashboard(props) {
                   </>
                 )}
 
-                {/* Hosts tab */}
+                {/* Hosts (Departments) tab */}
                 {adminTab === "hosts" && (
                   <>
-                    <p className="section-label">Add New Host</p>
+                    <p className="section-label">Add New Department</p>
                     <form onSubmit={props.onHostSubmit} style={{ marginBottom: 20 }}>
                       <div className="fieldGrid">
-                        <label>Full Name * <input name="fullName" value={props.hostForm?.fullName ?? ""} onChange={props.onHostFormChange} required /></label>
-                        <label>Email * <input name="email" type="email" value={props.hostForm?.email ?? ""} onChange={props.onHostFormChange} required /></label>
-                        <label className="wide">Department <input name="department" value={props.hostForm?.department ?? ""} onChange={props.onHostFormChange} placeholder="Engineering" /></label>
+                        <label>Department Name * <input name="department" value={props.hostForm?.department ?? ""} onChange={props.onHostFormChange} required placeholder="e.g. Engineering" /></label>
+                        <label>Department Head Name * <input name="fullName" value={props.hostForm?.fullName ?? ""} onChange={props.onHostFormChange} required placeholder="John Doe" /></label>
+                        <label className="wide">Head Email * <input name="email" type="email" value={props.hostForm?.email ?? ""} onChange={props.onHostFormChange} required placeholder="head@company.com" /></label>
                       </div>
-                      <button className="primaryButton" type="submit"><Users size={15} /> Add Host</button>
+                      <button className="primaryButton" type="submit"><Users size={15} /> Add Department</button>
                     </form>
 
                     {props.hosts.length > 0
                       ? props.hosts.map(h => (
                         <div className="list-item" key={h.id}>
                           <div style={{ display: "flex", alignItems: "center" }}>
-                            <div className="avatar-circle">{h.full_name?.charAt(0).toUpperCase()}</div>
+                            <div className="avatar-circle">
+                              {(h.department || h.full_name || "D").charAt(0).toUpperCase()}
+                            </div>
                             <div className="list-item-main">
-                              <div className="list-item-name">{h.full_name}</div>
-                              <div className="list-item-sub">{h.email}{h.department ? ` · ${h.department}` : ""}</div>
+                              <div className="list-item-name">{h.department || "General"}</div>
+                              <div className="list-item-sub">Head: {h.full_name} · {h.email}</div>
                             </div>
                           </div>
                         </div>
                       ))
-                      : <div className="empty">No hosts yet. Add employees who receive visitors.</div>
+                      : <div className="empty">No departments yet. Add departments who receive visitors.</div>
                     }
                   </>
                 )}
