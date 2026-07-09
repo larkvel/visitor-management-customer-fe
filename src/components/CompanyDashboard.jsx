@@ -242,6 +242,35 @@ export default function CompanyDashboard(props) {
             <h2>Visitor Log</h2>
           </div>
 
+          <div className="log-filters">
+            <span className="log-filters-title">Filter Logs</span>
+            <div className="log-filters-group">
+              <label>From:</label>
+              <input 
+                type="date" 
+                value={props.startDate} 
+                onChange={e => props.onStartDateChange(e.target.value)} 
+              />
+            </div>
+            <div className="log-filters-group">
+              <label>To:</label>
+              <input 
+                type="date" 
+                value={props.endDate} 
+                onChange={e => props.onEndDateChange(e.target.value)} 
+              />
+            </div>
+            {(props.startDate || props.endDate) && (
+              <button 
+                type="button" 
+                className="clear-filter-btn"
+                onClick={() => { props.onStartDateChange(""); props.onEndDateChange(""); }}
+              >
+                Clear
+              </button>
+            )}
+          </div>
+
           <div className="visitList">
             {props.visits.length === 0
               ? <div className="empty">No visits registered yet.</div>

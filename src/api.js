@@ -49,7 +49,12 @@ export const api = {
   createUser: (payload) => request("/api/users", { method: "POST", body: JSON.stringify(payload) }),
 
   // Visits
-  listVisits: (companyId) => request(`/api/visits?companyId=${companyId}`),
+  listVisits: (companyId, startDate, endDate) => {
+    let url = `/api/visits?companyId=${companyId}`;
+    if (startDate) url += `&startDate=${startDate}`;
+    if (endDate) url += `&endDate=${endDate}`;
+    return request(url);
+  },
   getDashboard: (companyId) => request(`/api/dashboard?companyId=${companyId}`),
   createVisit: (payload) => request("/api/visits", { method: "POST", body: JSON.stringify(payload) }),
   updateVisit: (visitId, payload) => request(`/api/visits/${visitId}`, { method: "PUT", body: JSON.stringify(payload) }),

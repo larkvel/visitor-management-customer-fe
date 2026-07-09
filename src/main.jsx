@@ -32,6 +32,8 @@ function DashboardApp({ session, onLogout }) {
   const [userForm, setUserForm] = useState(emptyUser);
   const [locationForm, setLocationForm] = useState(emptyLocation);
   const [hostForm, setHostForm] = useState(emptyHost);
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
 
@@ -39,7 +41,7 @@ function DashboardApp({ session, onLogout }) {
     const [locs, hs, vs, us, dash] = await Promise.all([
       api.listLocations(companyId),
       api.listHosts(companyId),
-      api.listVisits(companyId),
+      api.listVisits(companyId, startDate, endDate),
       api.listUsers(companyId),
       api.getDashboard(companyId)
     ]);
@@ -66,6 +68,15 @@ function DashboardApp({ session, onLogout }) {
       })
       .finally(() => setLoading(false));
   }, [companyId]);
+
+  // Refetch visits when date filters change (skip initial loading stage)
+  useEffect(() => {
+    if (!loading) {
+      api.listVisits(companyId, startDate, endDate)
+        .then(setVisits)
+        .catch(e => setError(e.message));
+    }
+  }, [startDate, endDate]);
 
   function updateUserForm(e) { setUserForm(p => ({ ...p, [e.target.name]: e.target.value })); }
   function updateVisitForm(e) { setVisitForm(p => ({ ...p, [e.target.name]: e.target.value })); }
@@ -187,6 +198,10 @@ function DashboardApp({ session, onLogout }) {
           hostForm={hostForm}
           onHostFormChange={updateHostForm}
           onHostSubmit={submitHost}
+          startDate={startDate}
+          endDate={endDate}
+          onStartDateChange={setStartDate}
+          onEndDateChange={setEndDate}
           onCompanyChange={() => {}}
           onUserChange={() => {}}
           onUserFormChange={updateUserForm}
