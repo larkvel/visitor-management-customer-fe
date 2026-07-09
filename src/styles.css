@@ -823,6 +823,27 @@ a { color: var(--primary); text-decoration: none; }
   border-radius: 2px;
 }
 
+/* ── Setup Split Layout ──────────────────────────────────── */
+.setup-split {
+  display: grid;
+  grid-template-columns: 1fr 1.1fr;
+  gap: 40px;
+  align-items: start;
+  margin-top: 10px;
+}
+.setup-split .fieldGrid {
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+.setup-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 480px;
+  overflow-y: auto;
+  padding-right: 6px;
+}
+
 /* ── Responsive ──────────────────────────────────────────── */
 @media (max-width: 1024px) {
   .workspace { grid-template-columns: 1fr; }

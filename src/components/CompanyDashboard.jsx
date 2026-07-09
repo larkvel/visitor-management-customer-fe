@@ -52,7 +52,7 @@ export default function CompanyDashboard(props) {
   // ── SEPARATE PAGE: SETUP MODE ──
   if (props.activePage === "setup") {
     return (
-      <div style={{ maxWidth: 800, margin: "0 auto" }}>
+      <div style={{ maxWidth: 1000, margin: "0 auto" }}>
         {canManageUsers && (
           <div className="panel">
             <div className="panelHeader">
@@ -79,110 +79,132 @@ export default function CompanyDashboard(props) {
 
             {/* Users tab */}
             {adminTab === "users" && (
-              <>
-                <p className="section-label">Add New User</p>
-                <form onSubmit={props.onUserSubmit} style={{ marginBottom: 20 }}>
-                  <div className="fieldGrid">
-                    <label>Full Name <input name="fullName" value={props.userForm.fullName} onChange={props.onUserFormChange} required /></label>
-                    <label>Email <input name="email" type="email" value={props.userForm.email} onChange={props.onUserFormChange} required /></label>
-                    <label>Username <input name="username" value={props.userForm.username} onChange={props.onUserFormChange} required minLength={3} placeholder="min 3 chars" /></label>
-                    <label>Password <input name="password" type="password" value={props.userForm.password} onChange={props.onUserFormChange} required minLength={8} placeholder="min 8 chars" /></label>
-                    <label>Role
-                      <select name="role" value={props.userForm.role} onChange={props.onUserFormChange}>
-                        <option value="company_admin">Company Admin</option>
-                        <option value="reception">Reception</option>
-                        <option value="executive">Executive</option>
-                        <option value="viewer">Viewer</option>
-                      </select>
-                    </label>
-                  </div>
-                  <button className="primaryButton" type="submit"><UserCog size={15} /> Add User</button>
-                </form>
+              <div className="setup-split">
+                <div className="setup-split-left">
+                  <p className="section-label">Add New User</p>
+                  <form onSubmit={props.onUserSubmit} style={{ marginBottom: 20 }}>
+                    <div className="fieldGrid">
+                      <label>Full Name <input name="fullName" value={props.userForm.fullName} onChange={props.onUserFormChange} required /></label>
+                      <label>Email <input name="email" type="email" value={props.userForm.email} onChange={props.onUserFormChange} required /></label>
+                      <label>Username <input name="username" value={props.userForm.username} onChange={props.onUserFormChange} required minLength={3} placeholder="min 3 chars" /></label>
+                      <label>Password <input name="password" type="password" value={props.userForm.password} onChange={props.onUserFormChange} required minLength={8} placeholder="min 8 chars" /></label>
+                      <label>Role
+                        <select name="role" value={props.userForm.role} onChange={props.onUserFormChange}>
+                          <option value="company_admin">Company Admin</option>
+                          <option value="reception">Reception</option>
+                          <option value="executive">Executive</option>
+                          <option value="viewer">Viewer</option>
+                        </select>
+                      </label>
+                    </div>
+                    <button className="primaryButton" type="submit"><UserCog size={15} /> Add User</button>
+                  </form>
+                </div>
 
-                {props.users.length > 0 && (
-                  <div>
-                    <p className="section-label">Team Members</p>
-                    {props.users.map(u => (
-                      <div className="list-item" key={u.id}>
-                        <div style={{ display: "flex", alignItems: "center" }}>
-                          <div className="avatar-circle">{u.full_name?.charAt(0).toUpperCase()}</div>
-                          <div className="list-item-main">
-                            <div className="list-item-name">{u.full_name}</div>
-                            <div className="list-item-sub">{u.email}{u.username ? ` · @${u.username}` : ""}</div>
+                <div className="setup-split-right">
+                  <p className="section-label">Team Members</p>
+                  {props.users.length > 0 ? (
+                    <div className="setup-list">
+                      {props.users.map(u => (
+                        <div className="list-item" key={u.id}>
+                          <div style={{ display: "flex", alignItems: "center" }}>
+                            <div className="avatar-circle">{u.full_name?.charAt(0).toUpperCase()}</div>
+                            <div className="list-item-main">
+                              <div className="list-item-name">{u.full_name}</div>
+                              <div className="list-item-sub">{u.email}{u.username ? ` · @${u.username}` : ""}</div>
+                            </div>
+                          </div>
+                          <div className="list-item-badges">
+                            <RoleBadge role={u.role} />
+                            <StatusBadge status={u.is_active ? "active" : "suspended"} />
                           </div>
                         </div>
-                        <div className="list-item-badges">
-                          <RoleBadge role={u.role} />
-                          <StatusBadge status={u.is_active ? "active" : "suspended"} />
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="empty">No team members registered yet.</div>
+                  )}
+                </div>
+              </div>
             )}
 
             {/* Locations tab */}
             {adminTab === "locations" && (
-              <>
-                <p className="section-label">Add New Location</p>
-                <form onSubmit={props.onLocationSubmit} style={{ marginBottom: 20 }}>
-                  <div className="fieldGrid">
-                    <label>Location Name * <input name="name" value={props.locationForm?.name ?? ""} onChange={props.onLocationFormChange} required placeholder="Head Office" /></label>
-                    <label>Address <input name="address" value={props.locationForm?.address ?? ""} onChange={props.onLocationFormChange} placeholder="Street, City" /></label>
-                  </div>
-                  <button className="primaryButton" type="submit"><MapPin size={15} /> Add Location</button>
-                </form>
-
-                {props.locations.length > 0
-                  ? props.locations.map(loc => (
-                    <div className="list-item" key={loc.id}>
-                      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                        <div className="avatar-circle" style={{ background: "rgba(99,102,241,.1)", borderColor: "var(--primary)" }}>
-                          <MapPin size={16} color="var(--primary)" />
-                        </div>
-                        <div className="list-item-main">
-                          <div className="list-item-name">{loc.name}</div>
-                          {loc.address && <div className="list-item-sub">{loc.address}</div>}
-                        </div>
-                      </div>
+              <div className="setup-split">
+                <div className="setup-split-left">
+                  <p className="section-label">Add New Location</p>
+                  <form onSubmit={props.onLocationSubmit} style={{ marginBottom: 20 }}>
+                    <div className="fieldGrid">
+                      <label>Location Name * <input name="name" value={props.locationForm?.name ?? ""} onChange={props.onLocationFormChange} required placeholder="Head Office" /></label>
+                      <label>Address <input name="address" value={props.locationForm?.address ?? ""} onChange={props.onLocationFormChange} placeholder="Street, City" /></label>
                     </div>
-                  ))
-                  : <div className="empty">No locations yet. Add one above.</div>
-                }
-              </>
+                    <button className="primaryButton" type="submit"><MapPin size={15} /> Add Location</button>
+                  </form>
+                </div>
+
+                <div className="setup-split-right">
+                  <p className="section-label">Active Locations</p>
+                  {props.locations.length > 0 ? (
+                    <div className="setup-list">
+                      {props.locations.map(loc => (
+                        <div className="list-item" key={loc.id}>
+                          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                            <div className="avatar-circle" style={{ background: "rgba(99,102,241,.1)", borderColor: "var(--primary)" }}>
+                              <MapPin size={16} color="var(--primary)" />
+                            </div>
+                            <div className="list-item-main">
+                              <div className="list-item-name">{loc.name}</div>
+                              {loc.address && <div className="list-item-sub">{loc.address}</div>}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="empty">No locations yet. Add one above.</div>
+                  )}
+                </div>
+              </div>
             )}
 
             {/* Departments tab */}
             {adminTab === "hosts" && (
-              <>
-                <p className="section-label">Add New Department</p>
-                <form onSubmit={props.onHostSubmit} style={{ marginBottom: 20 }}>
-                  <div className="fieldGrid">
-                    <label>Department Name * <input name="department" value={props.hostForm?.department ?? ""} onChange={props.onHostFormChange} required placeholder="e.g. Engineering" /></label>
-                    <label>Department Head Name * <input name="fullName" value={props.hostForm?.fullName ?? ""} onChange={props.onHostFormChange} required placeholder="John Doe" /></label>
-                    <label>Head Email * <input name="email" type="email" value={props.hostForm?.email ?? ""} onChange={props.onHostFormChange} required placeholder="head@company.com" /></label>
-                  </div>
-                  <button className="primaryButton" type="submit"><Users size={15} /> Add Department</button>
-                </form>
-
-                {props.hosts.length > 0
-                  ? props.hosts.map(h => (
-                    <div className="list-item" key={h.id}>
-                      <div style={{ display: "flex", alignItems: "center" }}>
-                        <div className="avatar-circle">
-                          {(h.department || h.full_name || "D").charAt(0).toUpperCase()}
-                        </div>
-                        <div className="list-item-main">
-                          <div className="list-item-name">{h.department || "General"}</div>
-                          <div className="list-item-sub">Head: {h.full_name} · {h.email}</div>
-                        </div>
-                      </div>
+              <div className="setup-split">
+                <div className="setup-split-left">
+                  <p className="section-label">Add New Department</p>
+                  <form onSubmit={props.onHostSubmit} style={{ marginBottom: 20 }}>
+                    <div className="fieldGrid">
+                      <label>Department Name * <input name="department" value={props.hostForm?.department ?? ""} onChange={props.onHostFormChange} required placeholder="e.g. Engineering" /></label>
+                      <label>Department Head Name * <input name="fullName" value={props.hostForm?.fullName ?? ""} onChange={props.onHostFormChange} required placeholder="John Doe" /></label>
+                      <label>Head Email * <input name="email" type="email" value={props.hostForm?.email ?? ""} onChange={props.onHostFormChange} required placeholder="head@company.com" /></label>
                     </div>
-                  ))
-                  : <div className="empty">No departments yet. Add departments who receive visitors.</div>
-                }
-              </>
+                    <button className="primaryButton" type="submit"><Users size={15} /> Add Department</button>
+                  </form>
+                </div>
+
+                <div className="setup-split-right">
+                  <p className="section-label">Departments</p>
+                  {props.hosts.length > 0 ? (
+                    <div className="setup-list">
+                      {props.hosts.map(h => (
+                        <div className="list-item" key={h.id}>
+                          <div style={{ display: "flex", alignItems: "center" }}>
+                            <div className="avatar-circle">
+                              {(h.department || h.full_name || "D").charAt(0).toUpperCase()}
+                            </div>
+                            <div className="list-item-main">
+                              <div className="list-item-name">{h.department || "General"}</div>
+                              <div className="list-item-sub">Head: {h.full_name} · {h.email}</div>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="empty">No departments yet. Add departments who receive visitors.</div>
+                  )}
+                </div>
+              </div>
             )}
           </div>
         )}
