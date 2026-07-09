@@ -34,6 +34,11 @@ export default function CompanyDashboard(props) {
   const isReception    = props.activeUser?.role === "reception";
   const [adminTab, setAdminTab] = useState("users");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [userSearch, setUserSearch] = useState("");
+
+  const filteredUsers = props.users.filter(u => 
+    u.full_name?.toLowerCase().includes(userSearch.toLowerCase())
+  );
 
   // Filter logs locally based on selected status
   let filteredVisits = props.visits;
@@ -102,10 +107,29 @@ export default function CompanyDashboard(props) {
                 </div>
 
                 <div className="setup-split-right">
-                  <p className="section-label">Team Members</p>
-                  {props.users.length > 0 ? (
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+                    <p className="section-label" style={{ margin: 0 }}>Team Members</p>
+                    <input 
+                      type="text" 
+                      placeholder="Search name…" 
+                      value={userSearch} 
+                      onChange={e => setUserSearch(e.target.value)}
+                      style={{ 
+                        background: "var(--bg3)", 
+                        border: "1px solid var(--border2)", 
+                        color: "var(--text)", 
+                        padding: "6px 12px", 
+                        borderRadius: "6px", 
+                        fontSize: "12px", 
+                        outline: "none",
+                        width: "160px",
+                        boxSizing: "border-box"
+                      }} 
+                    />
+                  </div>
+                  {filteredUsers.length > 0 ? (
                     <div className="setup-list">
-                      {props.users.map(u => (
+                      {filteredUsers.map(u => (
                         <div className="list-item" key={u.id}>
                           <div style={{ display: "flex", alignItems: "center" }}>
                             <div className="avatar-circle">{u.full_name?.charAt(0).toUpperCase()}</div>
@@ -142,7 +166,7 @@ export default function CompanyDashboard(props) {
                       ))}
                     </div>
                   ) : (
-                    <div className="empty">No team members registered yet.</div>
+                    <div className="empty">No team members found matching "{userSearch}".</div>
                   )}
                 </div>
               </div>
