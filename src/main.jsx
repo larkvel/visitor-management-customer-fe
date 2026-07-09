@@ -4,6 +4,7 @@ import { api } from "./api";
 import CompanyDashboard from "./components/CompanyDashboard";
 import LandingPage from "./components/LandingPage";
 import Login from "./components/Login";
+import ScanStatusPage from "./components/ScanStatusPage";
 import { ClipboardList, Settings } from "lucide-react";
 import { toDateTimeLocal, toIso } from "./utils/helpers";
 import "./styles.css";
@@ -280,6 +281,9 @@ function CompanyApp({ subdomain }) {
 
 function App() {
   const subdomain = getSubdomain();
+  if (window.location.pathname === "/scan-status") {
+    return <ScanStatusPage />;
+  }
   if (!subdomain) return <LandingPage />;
   return <CompanyApp subdomain={subdomain} />;
 }
