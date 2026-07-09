@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import {
   CalendarClock, CheckCircle2, DoorOpen, Edit3,
-  LogIn, LogOut, MapPin, UserCog, UserPlus, Users
+  LogIn, LogOut, MapPin, Trash2, UserCog, UserPlus, Users
 } from "lucide-react";
 import { can } from "../utils/helpers";
 
@@ -114,9 +114,29 @@ export default function CompanyDashboard(props) {
                               <div className="list-item-sub">{u.email}{u.username ? ` · @${u.username}` : ""}</div>
                             </div>
                           </div>
-                          <div className="list-item-badges">
+                          <div className="list-item-badges" style={{ display: "flex", alignItems: "center", gap: 12 }}>
                             <RoleBadge role={u.role} />
                             <StatusBadge status={u.is_active ? "active" : "suspended"} />
+                            {u.id !== props.activeUserId && (
+                              <div style={{ display: "flex", alignItems: "center", gap: 8, marginLeft: 8 }}>
+                                <button 
+                                  type="button" 
+                                  title={u.is_active ? "Deactivate User" : "Activate User"} 
+                                  onClick={() => props.onUserStatusToggle(u.id, u.is_active)}
+                                  style={{ padding: "4px 8px", background: "transparent", border: "1px solid var(--border2)", borderRadius: 4, color: u.is_active ? "var(--warn)" : "var(--success)", cursor: "pointer", fontSize: 11, fontWeight: 600 }}
+                                >
+                                  {u.is_active ? "Deactivate" : "Activate"}
+                                </button>
+                                <button 
+                                  type="button" 
+                                  title="Delete User" 
+                                  onClick={() => props.onUserDelete(u.id)}
+                                  style={{ padding: 6, background: "transparent", border: "1px solid var(--border2)", borderRadius: 4, color: "var(--danger)", cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center" }}
+                                >
+                                  <Trash2 size={13} />
+                                </button>
+                              </div>
+                            )}
                           </div>
                         </div>
                       ))}

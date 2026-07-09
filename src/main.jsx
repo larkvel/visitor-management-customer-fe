@@ -94,6 +94,23 @@ function DashboardApp({ session, onLogout }) {
     } catch (err) { setError(err.message); }
   }
 
+  async function handleUserStatusToggle(userId, currentStatus) {
+    setError("");
+    try {
+      await api.toggleUserStatus(userId, !currentStatus);
+      await loadData();
+    } catch (err) { setError(err.message); }
+  }
+
+  async function handleUserDelete(userId) {
+    if (!window.confirm("Are you sure you want to delete this user?")) return;
+    setError("");
+    try {
+      await api.deleteUser(userId);
+      await loadData();
+    } catch (err) { setError(err.message); }
+  }
+
   async function submitVisit(e) {
     e.preventDefault(); setError("");
     try {
@@ -226,6 +243,8 @@ function DashboardApp({ session, onLogout }) {
           onUserChange={() => {}}
           onUserFormChange={updateUserForm}
           onUserSubmit={submitUser}
+          onUserStatusToggle={handleUserStatusToggle}
+          onUserDelete={handleUserDelete}
           onVisitChange={updateVisitForm}
           onVisitEdit={startVisitEdit}
           onVisitStatus={updateVisitStatus}

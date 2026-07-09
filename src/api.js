@@ -47,6 +47,8 @@ export const api = {
   // Users
   listUsers: (companyId) => request(`/api/users?companyId=${companyId}`),
   createUser: (payload) => request("/api/users", { method: "POST", body: JSON.stringify(payload) }),
+  toggleUserStatus: (userId, isActive) => request(`/api/users/${userId}/status`, { method: "PUT", body: JSON.stringify({ isActive }) }),
+  deleteUser: (userId) => request(`/api/users/${userId}`, { method: "DELETE" }),
 
   // Visits
   listVisits: (companyId, startDate, endDate) => {
