@@ -52,7 +52,7 @@ export default function CompanyDashboard(props) {
   // ── SEPARATE PAGE: SETUP MODE ──
   if (props.activePage === "setup") {
     return (
-      <div style={{ maxWidth: 1140, margin: "0 auto" }}>
+      <div style={{ maxWidth: 800, margin: "0 auto" }}>
         {canManageUsers && (
           <div className="panel">
             <div className="panelHeader">
@@ -87,7 +87,7 @@ export default function CompanyDashboard(props) {
                     <label>Email <input name="email" type="email" value={props.userForm.email} onChange={props.onUserFormChange} required /></label>
                     <label>Username <input name="username" value={props.userForm.username} onChange={props.onUserFormChange} required minLength={3} placeholder="min 3 chars" /></label>
                     <label>Password <input name="password" type="password" value={props.userForm.password} onChange={props.onUserFormChange} required minLength={8} placeholder="min 8 chars" /></label>
-                    <label className="wide">Role
+                    <label>Role
                       <select name="role" value={props.userForm.role} onChange={props.onUserFormChange}>
                         <option value="company_admin">Company Admin</option>
                         <option value="reception">Reception</option>
@@ -161,7 +161,7 @@ export default function CompanyDashboard(props) {
                   <div className="fieldGrid">
                     <label>Department Name * <input name="department" value={props.hostForm?.department ?? ""} onChange={props.onHostFormChange} required placeholder="e.g. Engineering" /></label>
                     <label>Department Head Name * <input name="fullName" value={props.hostForm?.fullName ?? ""} onChange={props.onHostFormChange} required placeholder="John Doe" /></label>
-                    <label className="wide">Head Email * <input name="email" type="email" value={props.hostForm?.email ?? ""} onChange={props.onHostFormChange} required placeholder="head@company.com" /></label>
+                    <label>Head Email * <input name="email" type="email" value={props.hostForm?.email ?? ""} onChange={props.onHostFormChange} required placeholder="head@company.com" /></label>
                   </div>
                   <button className="primaryButton" type="submit"><Users size={15} /> Add Department</button>
                 </form>

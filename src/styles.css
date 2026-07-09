@@ -713,13 +713,13 @@ a { color: var(--primary); text-decoration: none; }
 /* ── Log Filters ────────────────────────────────────────── */
 .log-filters {
   display: flex;
-  align-items: center;
-  gap: 12px;
+  align-items: flex-end;
+  gap: 16px;
   background: var(--bg2);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
-  padding: 10px 16px;
-  margin-bottom: 16px;
+  padding: 14px 18px;
+  margin-bottom: 20px;
   flex-wrap: wrap;
 }
 .log-filters-title {
@@ -728,27 +728,37 @@ a { color: var(--primary); text-decoration: none; }
   text-transform: uppercase;
   color: var(--text3);
   letter-spacing: .05em;
-  margin-right: 4px;
+  padding-bottom: 12px;
+  margin-right: 8px;
+  white-space: nowrap;
 }
 .log-filters-group {
   display: flex;
-  align-items: center;
-  gap: 8px;
+  flex-direction: column;
+  gap: 6px;
 }
 .log-filters-group label {
-  font-size: 12px;
-  color: var(--text2);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text3);
+  text-transform: uppercase;
+  letter-spacing: .02em;
 }
+.log-filters select,
 .log-filters input[type="date"] {
   background: var(--bg3);
   border: 1px solid var(--border2);
   color: var(--text);
   border-radius: 6px;
-  padding: 5px 9px;
+  padding: 8px 12px;
   font-size: 13px;
   outline: none;
   transition: border-color var(--transition);
+  height: 38px;
+  min-width: 160px;
+  box-sizing: border-box;
 }
+.log-filters select:focus,
 .log-filters input[type="date"]:focus {
   border-color: var(--primary);
 }
@@ -757,10 +767,16 @@ a { color: var(--primary); text-decoration: none; }
   border: 1px solid var(--border2);
   color: var(--text2);
   border-radius: 6px;
-  padding: 5px 12px;
-  font-size: 12px;
-  font-weight: 500;
+  padding: 0 16px;
+  font-size: 13px;
+  font-weight: 600;
+  height: 38px;
+  cursor: pointer;
   transition: all var(--transition);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
 }
 .clear-filter-btn:hover {
   background: var(--bg3);
