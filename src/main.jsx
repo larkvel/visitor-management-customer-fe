@@ -4,6 +4,7 @@ import { api } from "./api";
 import CompanyDashboard from "./components/CompanyDashboard";
 import LandingPage from "./components/LandingPage";
 import Login from "./components/Login";
+import { ClipboardList, Settings } from "lucide-react";
 import { toDateTimeLocal, toIso } from "./utils/helpers";
 import "./styles.css";
 
@@ -34,6 +35,7 @@ function DashboardApp({ session, onLogout }) {
   const [hostForm, setHostForm] = useState(emptyHost);
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
+  const [activePage, setActivePage] = useState("log");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
 
@@ -177,6 +179,23 @@ function DashboardApp({ session, onLogout }) {
         </div>
       </header>
 
+      <div className="sub-navbar">
+        <button 
+          className={`sub-nav-btn ${activePage === "log" ? "active" : ""}`}
+          onClick={() => setActivePage("log")}
+        >
+          <ClipboardList size={16} /> Visitor Log
+        </button>
+        {activeUser && (activeUser.role === "company_admin" || activeUser.role === "platform_admin") && (
+          <button 
+            className={`sub-nav-btn ${activePage === "setup" ? "active" : ""}`}
+            onClick={() => setActivePage("setup")}
+          >
+            <Settings size={16} /> Setup
+          </button>
+        )}
+      </div>
+
       <div className="dash-body">
         {error && <div className="alert">{error}</div>}
         <CompanyDashboard
@@ -202,6 +221,7 @@ function DashboardApp({ session, onLogout }) {
           endDate={endDate}
           onStartDateChange={setStartDate}
           onEndDateChange={setEndDate}
+          activePage={activePage}
           onCompanyChange={() => {}}
           onUserChange={() => {}}
           onUserFormChange={updateUserForm}
