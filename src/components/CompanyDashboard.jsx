@@ -139,7 +139,30 @@ export default function CompanyDashboard(props) {
                             </div>
                           </div>
                           <div className="list-item-badges" style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                            <RoleBadge role={u.role} />
+                            {u.id === props.activeUserId ? (
+                              <RoleBadge role={u.role} />
+                            ) : (
+                              <select
+                                value={u.role}
+                                onChange={e => props.onUserRoleChange(u.id, e.target.value)}
+                                style={{
+                                  background: "var(--bg3)",
+                                  border: "1px solid var(--border2)",
+                                  color: "var(--text)",
+                                  borderRadius: "4px",
+                                  padding: "3px 6px",
+                                  fontSize: "11px",
+                                  fontWeight: "600",
+                                  cursor: "pointer",
+                                  outline: "none"
+                                }}
+                              >
+                                <option value="company_admin">Company Admin</option>
+                                <option value="reception">Reception</option>
+                                <option value="executive">Executive</option>
+                                <option value="viewer">Viewer</option>
+                              </select>
+                            )}
                             <StatusBadge status={u.is_active ? "active" : "suspended"} />
                             {u.id !== props.activeUserId && (
                               <div style={{ display: "flex", alignItems: "center", gap: 8, marginLeft: 8 }}>

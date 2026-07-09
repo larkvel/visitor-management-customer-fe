@@ -111,6 +111,14 @@ function DashboardApp({ session, onLogout }) {
     } catch (err) { setError(err.message); }
   }
 
+  async function handleUserRoleChange(userId, newRole) {
+    setError("");
+    try {
+      await api.changeUserRole(userId, newRole);
+      await loadData();
+    } catch (err) { setError(err.message); }
+  }
+
   async function submitVisit(e) {
     e.preventDefault(); setError("");
     try {
@@ -244,6 +252,7 @@ function DashboardApp({ session, onLogout }) {
           onUserFormChange={updateUserForm}
           onUserSubmit={submitUser}
           onUserStatusToggle={handleUserStatusToggle}
+          onUserRoleChange={handleUserRoleChange}
           onUserDelete={handleUserDelete}
           onVisitChange={updateVisitForm}
           onVisitEdit={startVisitEdit}
