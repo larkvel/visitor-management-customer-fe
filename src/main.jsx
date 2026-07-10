@@ -17,7 +17,7 @@ function getSubdomain() {
   return params.get("company") || null;
 }
 
-const emptyVisit = { locationId: "", hostId: "", visitorName: "", visitorEmail: "", visitorPhone: "", purpose: "", expectedAt: "" };
+const emptyVisit = { locationId: "", hostId: "", hostUserId: "", hostName: "", hostEmail: "", visitorName: "", visitorEmail: "", visitorPhone: "", purpose: "", expectedAt: "" };
 const emptyUser = { fullName: "", email: "", username: "", password: "", role: "executive" };
 const emptyLocation = { name: "", address: "" };
 const emptyHost = { fullName: "", email: "", department: "" };
@@ -156,9 +156,15 @@ function DashboardApp({ session, onLogout }) {
   function startVisitEdit(visit) {
     setEditingVisitId(visit.id);
     setVisitForm({
-      locationId: visit.location_id, hostId: visit.host_id || "",
-      visitorName: visit.visitor_name, visitorEmail: visit.visitor_email || "",
-      visitorPhone: visit.visitor_phone || "", purpose: visit.purpose,
+      locationId: visit.location_id,
+      hostId: visit.host_id || "",
+      hostUserId: visit.host_user_id || "",
+      hostName: visit.host_name || "",
+      hostEmail: visit.host_email || "",
+      visitorName: visit.visitor_name,
+      visitorEmail: visit.visitor_email || "",
+      visitorPhone: visit.visitor_phone || "",
+      purpose: visit.purpose,
       expectedAt: toDateTimeLocal(visit.expected_at)
     });
   }

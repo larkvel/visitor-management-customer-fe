@@ -320,16 +320,82 @@ export default function CompanyDashboard(props) {
                   }
                 </select>
               </label>
-              <label>Department / Host
+              <label>Department
                 <select name="hostId" value={props.form.hostId} onChange={props.onVisitChange}>
-                  <option value="">Select Department / Host…</option>
+                  <option value="">Select Department…</option>
                   {props.hosts.map(h => (
                     <option key={h.id} value={h.id}>
-                      {h.department ? `${h.department} — ${h.full_name}` : h.full_name}
+                      {h.department}
                     </option>
                   ))}
                 </select>
               </label>
+              <label>Host Type
+                <select 
+                  value={props.form.hostUserId ? "registered" : "manual"}
+                  onChange={e => {
+                    if (e.target.value === "manual") {
+                      props.onVisitChange({ target: { name: "hostUserId", value: "" } });
+                      props.onVisitChange({ target: { name: "hostName", value: "" } });
+                      props.onVisitChange({ target: { name: "hostEmail", value: "" } });
+                    } else {
+                      const firstUser = props.users[0];
+                      if (firstUser) {
+                        props.onVisitChange({ target: { name: "hostUserId", value: firstUser.id } });
+                        props.onVisitChange({ target: { name: "hostName", value: firstUser.full_name } });
+                        props.onVisitChange({ target: { name: "hostEmail", value: firstUser.email } });
+                      }
+                    }
+                  }}
+                >
+                  <option value="registered">Registered Team Member</option>
+                  <option value="manual">Enter Manually</option>
+                </select>
+              </label>
+              {props.form.hostUserId ? (
+                <label>Select Host
+                  <select 
+                    name="hostUserId" 
+                    value={props.form.hostUserId} 
+                    onChange={e => {
+                      const selected = props.users.find(u => u.id === e.target.value);
+                      if (selected) {
+                        props.onVisitChange({ target: { name: "hostUserId", value: selected.id } });
+                        props.onVisitChange({ target: { name: "hostName", value: selected.full_name } });
+                        props.onVisitChange({ target: { name: "hostEmail", value: selected.email } });
+                      }
+                    }}
+                    required
+                  >
+                    <option value="">Choose team member…</option>
+                    {props.users.map(u => (
+                      <option key={u.id} value={u.id}>{u.full_name} ({u.role})</option>
+                    ))}
+                  </select>
+                </label>
+              ) : (
+                <>
+                  <label>Host Name *
+                    <input 
+                      name="hostName" 
+                      value={props.form.hostName || ""} 
+                      onChange={props.onVisitChange} 
+                      required 
+                      placeholder="John Doe" 
+                    />
+                  </label>
+                  <label>Host Email *
+                    <input 
+                      name="hostEmail" 
+                      type="email" 
+                      value={props.form.hostEmail || ""} 
+                      onChange={props.onVisitChange} 
+                      required 
+                      placeholder="host@company.com" 
+                    />
+                  </label>
+                </>
+              )}
               <label className="wide">Purpose <input name="purpose" value={props.form.purpose} onChange={props.onVisitChange} required placeholder="Meeting / Interview / Delivery…" /></label>
             </div>
 
