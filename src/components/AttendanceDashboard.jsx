@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { api } from "../api";
-import { Users, CheckCircle2, AlertCircle, Clock, Calendar, ArrowRight, ShieldCheck, Edit3, ClipboardList, PenTool } from "lucide-react";
+import { Users, CheckCircle2, AlertCircle, Clock, Calendar, ArrowRight, ShieldCheck, Edit3, ClipboardList, PenTool, UserPlus } from "lucide-react";
 
 export default function AttendanceDashboard({ companyId, users, session, setError, onReload }) {
   const isAdmin = session.user.role === "company_admin" || session.user.role === "platform_admin";
@@ -14,6 +14,16 @@ export default function AttendanceDashboard({ companyId, users, session, setErro
   const [activeSubTab, setActiveSubTab] = useState("logs");
   const [editingEmployee, setEditingEmployee] = useState(null);
   const [employeeSearch, setEmployeeSearch] = useState("");
+
+  // Add Employee Form State (Pure Employees have no login credentials)
+  const [empForm, setEmpForm] = useState({
+    fullName: "",
+    email: "",
+    biometricId: "",
+    salaryType: "monthly",
+    salaryRate: 0,
+    paidLeavesLimit: 1.5
+  });
 
   // Load stats and logs
   async function loadData() {
@@ -36,10 +46,42 @@ export default function AttendanceDashboard({ companyId, users, session, setErro
     loadData();
   }, [startDate, endDate]);
 
+  // Handle registering a new pure employee (role viewer, empty username/password)
+  async function handleAddEmployee(e) {
+    e.preventDefault();
+    try {
+      await api.createUser({
+        companyId,
+        fullName: empForm.fullName,
+        email: empForm.email,
+        role: "viewer", // Default role for pure employees who cannot log in
+        username: "",   // Leaves username empty so they do not show up in Setup Portal Users
+        password: "",   // Leaves password empty
+        biometricId: empForm.biometricId || "",
+        salaryType: empForm.salaryType,
+        salaryRate: Number(empForm.salaryRate || 0),
+        paidLeavesLimit: Number(empForm.paidLeavesLimit || 0)
+      });
+      // Reset form
+      setEmpForm({
+        fullName: "",
+        email: "",
+        biometricId: "",
+        salaryType: "monthly",
+        salaryRate: 0,
+        paidLeavesLimit: 1.5
+      });
+      if (onReload) await onReload();
+      await loadData();
+    } catch (err) {
+      setError(err.message);
+    }
+  }
+
   // Filter logs for the current logged in user
   const personalLogs = logs.filter(l => l.user_id === session.user.id);
 
-  // Search filtered users list
+  // Search filtered users list (displays all users/employees)
   const filteredUsers = users.filter(u => 
     u.full_name?.toLowerCase().includes(employeeSearch.toLowerCase())
   );
@@ -63,7 +105,7 @@ export default function AttendanceDashboard({ companyId, users, session, setErro
               onClick={() => setActiveSubTab("employees")}
               style={{ fontSize: 13, padding: "8px 16px" }}
             >
-              <Users size={15} /> Employee Parameters
+              <Users size={15} /> Manage Employees
             </button>
           )}
         </div>
@@ -192,7 +234,7 @@ export default function AttendanceDashboard({ companyId, users, session, setErro
                   {session.user.biometricId || "Not Registered"}
                 </div>
                 {!session.user.biometricId && (
-                  <p style={{ fontSize: 10, color: "var(--danger)", margin: "6px 0 0 0" }}>Register your Card ID under Employee Settings tab.</p>
+                  <p style={{ fontSize: 10, color: "var(--danger)", margin: "6px 0 0 0" }}>Register your Card ID under Manage Employees tab.</p>
                 )}
               </div>
 
@@ -230,63 +272,156 @@ export default function AttendanceDashboard({ companyId, users, session, setErro
 
       {/* Employee Parameters Panel */}
       {activeSubTab === "employees" && (
-        <section className="panel" style={{ background: "var(--bg2)", border: "1px solid var(--border1)", borderRadius: 12, padding: 24 }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
-            <div>
-              <h2 style={{ margin: 0, fontSize: 18, fontWeight: 700 }}>Employee settings directory</h2>
-              <p style={{ fontSize: 12, color: "var(--text-sub)", margin: "4px 0 0 0" }}>Manage biometric registration codes and payroll rates for company staff.</p>
-            </div>
-            <input 
-              type="text" 
-              placeholder="Search employee..." 
-              value={employeeSearch}
-              onChange={e => setEmployeeSearch(e.target.value)}
-              style={{ background: "var(--bg3)", border: "1px solid var(--border2)", color: "var(--text)", padding: "8px 16px", borderRadius: 8, fontSize: 12, outline: "none", width: 220 }}
-            />
+        <div style={{ display: "grid", gridTemplateColumns: "320px 1fr", gap: 24, alignItems: "start" }}>
+          
+          {/* Left panel: Add Attendance/Payroll Employee Form */}
+          <div className="panel" style={{ background: "var(--bg2)", border: "1px solid var(--border1)", borderRadius: 12, padding: 20 }}>
+            <h3 style={{ margin: "0 0 4px 0", fontSize: 15, fontWeight: 700 }}>Add Attendance Employee</h3>
+            <p style={{ fontSize: 11, color: "var(--text-sub)", marginBottom: 16 }}>Register employees for biometric check-in & payroll without login access.</p>
+            <form onSubmit={handleAddEmployee}>
+              <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                <label style={{ display: "flex", flexDirection: "column", gap: 4, fontSize: 12, fontWeight: 600, color: "var(--text)" }}>
+                  Employee Full Name *
+                  <input 
+                    name="fullName" 
+                    value={empForm.fullName} 
+                    onChange={e => setEmpForm({ ...empForm, fullName: e.target.value })} 
+                    required 
+                    placeholder="Jane Smith"
+                    style={{ background: "var(--bg3)", border: "1px solid var(--border2)", color: "var(--text)", padding: "8px 12px", borderRadius: 8, fontSize: 13, outline: "none" }}
+                  />
+                </label>
+                <label style={{ display: "flex", flexDirection: "column", gap: 4, fontSize: 12, fontWeight: 600, color: "var(--text)" }}>
+                  Email Address *
+                  <input 
+                    name="email" 
+                    type="email"
+                    value={empForm.email} 
+                    onChange={e => setEmpForm({ ...empForm, email: e.target.value })} 
+                    required 
+                    placeholder="jane.smith@larkvel.com"
+                    style={{ background: "var(--bg3)", border: "1px solid var(--border2)", color: "var(--text)", padding: "8px 12px", borderRadius: 8, fontSize: 13, outline: "none" }}
+                  />
+                </label>
+                <label style={{ display: "flex", flexDirection: "column", gap: 4, fontSize: 12, fontWeight: 600, color: "var(--text)" }}>
+                  Biometric Punch ID
+                  <input 
+                    name="biometricId" 
+                    value={empForm.biometricId} 
+                    onChange={e => setEmpForm({ ...empForm, biometricId: e.target.value })} 
+                    placeholder="e.g. 1002"
+                    style={{ background: "var(--bg3)", border: "1px solid var(--border2)", color: "var(--text)", padding: "8px 12px", borderRadius: 8, fontSize: 13, outline: "none" }}
+                  />
+                </label>
+                <label style={{ display: "flex", flexDirection: "column", gap: 4, fontSize: 12, fontWeight: 600, color: "var(--text)" }}>
+                  Salary Mode
+                  <select 
+                    name="salaryType" 
+                    value={empForm.salaryType} 
+                    onChange={e => setEmpForm({ ...empForm, salaryType: e.target.value })}
+                    style={{ background: "var(--bg3)", border: "1px solid var(--border2)", color: "var(--text)", padding: "8px 12px", borderRadius: 8, fontSize: 13, outline: "none" }}
+                  >
+                    <option value="monthly">Monthly Base</option>
+                    <option value="daily">Daily Wage</option>
+                  </select>
+                </label>
+                <label style={{ display: "flex", flexDirection: "column", gap: 4, fontSize: 12, fontWeight: 600, color: "var(--text)" }}>
+                  Base Rate ($)
+                  <input 
+                    name="salaryRate" 
+                    type="number"
+                    min="0"
+                    value={empForm.salaryRate} 
+                    onChange={e => setEmpForm({ ...empForm, salaryRate: Number(e.target.value) })} 
+                    required 
+                    style={{ background: "var(--bg3)", border: "1px solid var(--border2)", color: "var(--text)", padding: "8px 12px", borderRadius: 8, fontSize: 13, outline: "none" }}
+                  />
+                </label>
+                <label style={{ display: "flex", flexDirection: "column", gap: 4, fontSize: 12, fontWeight: 600, color: "var(--text)" }}>
+                  Monthly Paid Leaves Limit
+                  <input 
+                    name="paidLeavesLimit" 
+                    type="number"
+                    step="0.5"
+                    min="0"
+                    value={empForm.paidLeavesLimit} 
+                    onChange={e => setEmpForm({ ...empForm, paidLeavesLimit: Number(e.target.value) })} 
+                    required 
+                    style={{ background: "var(--bg3)", border: "1px solid var(--border2)", color: "var(--text)", padding: "8px 12px", borderRadius: 8, fontSize: 13, outline: "none" }}
+                  />
+                </label>
+              </div>
+              <button 
+                type="submit" 
+                className="primaryButton" 
+                style={{ width: "100%", marginTop: 20, display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}
+              >
+                <UserPlus size={15} /> Add Employee
+              </button>
+            </form>
           </div>
 
-          <div style={{ overflowX: "auto" }}>
-            <table style={{ width: "100%", borderCollapse: "collapse", textAlignment: "left" }}>
-              <thead>
-                <tr style={{ borderBottom: "1px solid var(--border1)" }}>
-                  <th style={{ padding: "12px 16px", fontSize: 11, textTransform: "uppercase", color: "var(--text-sub)", fontWeight: 700 }}>Employee</th>
-                  <th style={{ padding: "12px 16px", fontSize: 11, textTransform: "uppercase", color: "var(--text-sub)", fontWeight: 700 }}>Biometric Card Code</th>
-                  <th style={{ padding: "12px 16px", fontSize: 11, textTransform: "uppercase", color: "var(--text-sub)", fontWeight: 700 }}>Salary Settings</th>
-                  <th style={{ padding: "12px 16px", fontSize: 11, textTransform: "uppercase", color: "var(--text-sub)", fontWeight: 700 }}>Paid Leaves Limit</th>
-                  <th style={{ padding: "12px 16px", fontSize: 11, textTransform: "uppercase", color: "var(--text-sub)", fontWeight: 700 }}>Action</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredUsers.map((u, idx) => (
-                  <tr key={idx} style={{ borderBottom: "1px solid var(--border2)" }}>
-                    <td style={{ padding: "16px", fontSize: 13 }}>
-                      <div style={{ fontWeight: 600, color: "var(--text)" }}>{u.full_name}</div>
-                      <div style={{ fontSize: 11, color: "var(--text-sub)" }}>{u.email} · <span style={{ textTransform: "capitalize" }}>{u.role}</span></div>
-                    </td>
-                    <td style={{ padding: "16px", fontSize: 13, fontWeight: 700, color: u.biometric_id ? "var(--primary)" : "var(--text-sub)" }}>
-                      {u.biometric_id || "Not configured"}
-                    </td>
-                    <td style={{ padding: "16px", fontSize: 13, color: "var(--text)" }}>
-                      {u.salary_rate ? `${u.salary_type === "daily" ? "Daily Wage" : "Monthly Base"}: $${u.salary_rate}` : "$0.00 (Unconfigured)"}
-                    </td>
-                    <td style={{ padding: "16px", fontSize: 13, color: "var(--text)" }}>
-                      {u.paid_leaves_limit ? `${u.paid_leaves_limit} days / month` : "0.0 days"}
-                    </td>
-                    <td style={{ padding: "16px" }}>
-                      <button 
-                        className="secButton"
-                        onClick={() => setEditingEmployee(u)}
-                        style={{ padding: "6px 12px", fontSize: 11, borderRadius: 6, display: "inline-flex", alignItems: "center", gap: 6 }}
-                      >
-                        <Edit3 size={12} /> Configure
-                      </button>
-                    </td>
+          {/* Right panel: Employee Directory List */}
+          <div className="panel" style={{ background: "var(--bg2)", border: "1px solid var(--border1)", borderRadius: 12, padding: 20 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
+              <div>
+                <h3 style={{ margin: 0, fontSize: 15, fontWeight: 700 }}>Employee directory</h3>
+                <p style={{ fontSize: 11, color: "var(--text-sub)", margin: "2px 0 0 0" }}>Manage biometric registration codes and payroll rates for company staff.</p>
+              </div>
+              <input 
+                type="text" 
+                placeholder="Search..." 
+                value={employeeSearch}
+                onChange={e => setEmployeeSearch(e.target.value)}
+                style={{ background: "var(--bg3)", border: "1px solid var(--border2)", color: "var(--text)", padding: "8px 16px", borderRadius: 8, fontSize: 12, outline: "none", width: 180 }}
+              />
+            </div>
+
+            <div style={{ overflowX: "auto" }}>
+              <table style={{ width: "100%", borderCollapse: "collapse", textAlignment: "left" }}>
+                <thead>
+                  <tr style={{ borderBottom: "1px solid var(--border1)" }}>
+                    <th style={{ padding: "12px 16px", fontSize: 11, textTransform: "uppercase", color: "var(--text-sub)", fontWeight: 700 }}>Employee</th>
+                    <th style={{ padding: "12px 16px", fontSize: 11, textTransform: "uppercase", color: "var(--text-sub)", fontWeight: 700 }}>Biometric Punch Code</th>
+                    <th style={{ padding: "12px 16px", fontSize: 11, textTransform: "uppercase", color: "var(--text-sub)", fontWeight: 700 }}>Salary Settings</th>
+                    <th style={{ padding: "12px 16px", fontSize: 11, textTransform: "uppercase", color: "var(--text-sub)", fontWeight: 700 }}>Paid Leaves Limit</th>
+                    <th style={{ padding: "12px 16px", fontSize: 11, textTransform: "uppercase", color: "var(--text-sub)", fontWeight: 700 }}>Action</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {filteredUsers.map((u, idx) => (
+                    <tr key={idx} style={{ borderBottom: "1px solid var(--border2)" }}>
+                      <td style={{ padding: "16px", fontSize: 13 }}>
+                        <div style={{ fontWeight: 600, color: "var(--text)" }}>{u.full_name}</div>
+                        <div style={{ fontSize: 11, color: "var(--text-sub)" }}>
+                          {u.email}{u.username ? ` · @${u.username} (${u.role.replace("_", " ")})` : " · Pure Employee"}
+                        </div>
+                      </td>
+                      <td style={{ padding: "16px", fontSize: 13, fontWeight: 700, color: u.biometric_id ? "var(--primary)" : "var(--text-sub)" }}>
+                        {u.biometric_id || "Not configured"}
+                      </td>
+                      <td style={{ padding: "16px", fontSize: 13, color: "var(--text)" }}>
+                        {u.salary_rate ? `${u.salary_type === "daily" ? "Daily Wage" : "Monthly Base"}: $${u.salary_rate}` : "$0.00 (Unconfigured)"}
+                      </td>
+                      <td style={{ padding: "16px", fontSize: 13, color: "var(--text)" }}>
+                        {u.paid_leaves_limit ? `${u.paid_leaves_limit} days / month` : "0.0 days"}
+                      </td>
+                      <td style={{ padding: "16px" }}>
+                        <button 
+                          className="secButton"
+                          onClick={() => setEditingEmployee(u)}
+                          style={{ padding: "6px 12px", fontSize: 11, borderRadius: 6, display: "inline-flex", alignItems: "center", gap: 6 }}
+                        >
+                          <Edit3 size={12} /> Configure
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
-        </section>
+        </div>
       )}
 
       {/* Configure Employee parameters Modal */}
@@ -323,7 +458,7 @@ export default function AttendanceDashboard({ companyId, users, session, setErro
                     required 
                   />
                 </label>
-                <label style={{ gridColumn: "span 2" }}>Billing Email Address
+                <label style={{ gridColumn: "span 2" }}>Email Address
                   <input 
                     type="email" 
                     value={editingEmployee.email} 

@@ -37,7 +37,8 @@ export default function CompanyDashboard(props) {
   const [userSearch, setUserSearch] = useState("");
   const [editingUser, setEditingUser] = useState(null);
 
-  const filteredUsers = props.users.filter(u => 
+  const portalUsers = props.users.filter(u => u.username);
+  const filteredUsers = portalUsers.filter(u => 
     u.full_name?.toLowerCase().includes(userSearch.toLowerCase())
   );
 
@@ -68,7 +69,7 @@ export default function CompanyDashboard(props) {
 
             <div className="tab-bar">
               {[
-                { key: "users",     label: `Users (${props.users.length})`,         icon: <UserCog size={14} /> },
+                { key: "users",     label: `Portal Users (${props.users.filter(u => u.username).length})`, icon: <UserCog size={14} /> },
                 { key: "locations", label: `Locations (${props.locations.length})`,  icon: <MapPin size={14} /> },
                 { key: "hosts",     label: `Departments (${props.hosts.length})`,    icon: <Users size={14} /> },
               ].map(tab => (
