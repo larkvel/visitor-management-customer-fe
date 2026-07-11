@@ -11,6 +11,7 @@
   --surface:      #1e2130;
   --surface2:     #252840;
   --border:       rgba(255,255,255,.08);
+  --border1:      rgba(255,255,255,.08);
   --border2:      rgba(255,255,255,.14);
   --text:         #e8eaf0;
   --text2:        #9ca3af;
@@ -898,4 +899,15 @@ a { color: var(--primary); text-decoration: none; }
   from { opacity: 0; transform: scale(0.95) translateY(10px); }
   to { opacity: 1; transform: scale(1) translateY(0); }
 }
+
+
+/* -- Secondary button ----------------------------------- */
+.secButton {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 8px 16px; border-radius: var(--radius-sm);
+  background: var(--bg3); border: 1px solid var(--border2);
+  color: var(--text2); font-size: 13px; font-weight: 600;
+  cursor: pointer; transition: all var(--transition);
+}
+.secButton:hover { background: var(--surface); color: var(--text); border-color: var(--border); }
 

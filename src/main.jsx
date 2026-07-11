@@ -7,6 +7,7 @@ import Login from "./components/Login";
 import ScanStatusPage from "./components/ScanStatusPage";
 import AttendanceDashboard from "./components/AttendanceDashboard";
 import PayrollDashboard from "./components/PayrollDashboard";
+import EmployeeDashboard from "./components/EmployeeDashboard";
 import { ClipboardList, Settings, CalendarCheck, CircleDollarSign } from "lucide-react";
 import { toDateTimeLocal, toIso } from "./utils/helpers";
 import "./styles.css";
@@ -224,9 +225,48 @@ function DashboardApp({ session, onLogout, onSessionUpdate, subdomain }) {
     );
   }
 
+  const isEmployee = session.user.role === "viewer";
   const activeUser = users.find(u => u.id === session.user.id) || { ...session.user, permissions: [] };
   const initials = session.user.fullName?.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase() || "U";
 
+  // ── Employee (viewer role): show personal dashboard, not the full visitor log ──
+  if (isEmployee) {
+    return (
+      <main className="page">
+        <header className="topbar">
+          <div>
+            <p className="eyebrow">Employee Portal</p>
+            <h1>{session.user.companyName}</h1>
+          </div>
+          <div className="toolbar">
+            <div className="user-chip">
+              <div className="user-chip-avatar">{initials}</div>
+              <div>
+                <div className="user-chip-name">{session.user.fullName}</div>
+                <div className="user-chip-role">Employee</div>
+              </div>
+            </div>
+            <button className="logout-btn" onClick={onLogout}>Sign out</button>
+          </div>
+        </header>
+
+        <div className="dash-body">
+          {error && <div className="alert">{error}</div>}
+          <EmployeeDashboard
+            session={session}
+            locations={locations}
+            hosts={hosts}
+            visitForm={visitForm}
+            onVisitChange={updateVisitForm}
+            onVisitSubmit={submitVisit}
+            setError={setError}
+          />
+        </div>
+      </main>
+    );
+  }
+
+  // ── Admin / Reception / Executive: full dashboard ──
   return (
     <main className="page">
       <header className="topbar">

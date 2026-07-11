@@ -60,6 +60,16 @@ export const api = {
     return request(url);
   },
   getAttendanceStats: (companyId) => request(`/api/attendance/stats?companyId=${companyId}`),
+  getMyAttendanceSummary: () => request("/api/attendance/my-summary"),
+
+  // Leave Requests
+  submitLeaveRequest: (payload) => request("/api/leave-requests", { method: "POST", body: JSON.stringify(payload) }),
+  listLeaveRequests: (companyId, userId) => {
+    let url = `/api/leave-requests?companyId=${companyId}`;
+    if (userId) url += `&userId=${userId}`;
+    return request(url);
+  },
+  updateLeaveStatus: (requestId, status) => request(`/api/leave-requests/${requestId}/status`, { method: "PUT", body: JSON.stringify({ status }) }),
 
   // Payroll
   getPayrollSettings: () => request("/api/payroll/settings"),

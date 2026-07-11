@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { api } from "../api";
-import { Users, CheckCircle2, AlertCircle, Clock, Calendar, ArrowRight, ShieldCheck, Edit3, ClipboardList, PenTool, UserPlus } from "lucide-react";
+import { Users, CheckCircle2, AlertCircle, Clock, Calendar, ArrowRight, ShieldCheck, Edit3, ClipboardList, PenTool, UserPlus, FileText, XCircle, ThumbsUp, ThumbsDown } from "lucide-react";
 
 export default function AttendanceDashboard({ companyId, users, session, setError, onReload }) {
   const isAdmin = session.user.role === "company_admin" || session.user.role === "platform_admin";
@@ -10,10 +10,15 @@ export default function AttendanceDashboard({ companyId, users, session, setErro
   const [endDate, setEndDate] = useState(new Date().toISOString().split("T")[0]);
   const [loading, setLoading] = useState(true);
   
-  // Dashboard tabs: "logs" or "employees"
+  // Dashboard tabs: "logs", "employees", "leave"
   const [activeSubTab, setActiveSubTab] = useState("logs");
   const [editingEmployee, setEditingEmployee] = useState(null);
   const [employeeSearch, setEmployeeSearch] = useState("");
+
+  // Leave requests (admin view)
+  const [leaveRequests, setLeaveRequests] = useState([]);
+  const [leaveFilter, setLeaveFilter] = useState("pending");
+  const [reviewingId, setReviewingId] = useState(null);
 
   // Add Employee Form State (Pure Employees have no login credentials)
   const [empForm, setEmpForm] = useState({
@@ -42,9 +47,34 @@ export default function AttendanceDashboard({ companyId, users, session, setErro
     }
   }
 
+  async function loadLeaveRequests() {
+    try {
+      const reqs = await api.listLeaveRequests(companyId);
+      setLeaveRequests(reqs);
+    } catch (err) {
+      setError(err.message);
+    }
+  }
+
+  async function handleLeaveAction(requestId, status) {
+    setReviewingId(requestId);
+    try {
+      await api.updateLeaveStatus(requestId, status);
+      await loadLeaveRequests();
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setReviewingId(null);
+    }
+  }
+
   useEffect(() => {
     loadData();
   }, [startDate, endDate]);
+
+  useEffect(() => {
+    if (activeSubTab === "leave") loadLeaveRequests();
+  }, [activeSubTab]);
 
   // Handle registering a new pure employee (role viewer, empty username/password)
   async function handleAddEmployee(e) {
@@ -106,6 +136,15 @@ export default function AttendanceDashboard({ companyId, users, session, setErro
               style={{ fontSize: 13, padding: "8px 16px" }}
             >
               <Users size={15} /> Manage Employees
+            </button>
+          )}
+          {isAdmin && (
+            <button 
+              className={`sub-nav-btn ${activeSubTab === "leave" ? "active" : ""}`}
+              onClick={() => setActiveSubTab("leave")}
+              style={{ fontSize: 13, padding: "8px 16px" }}
+            >
+              <FileText size={15} /> Leave Requests
             </button>
           )}
         </div>
@@ -508,6 +547,127 @@ export default function AttendanceDashboard({ companyId, users, session, setErro
               </div>
             </form>
           </div>
+        </div>
+      )}
+
+      {/* ── LEAVE REQUESTS TAB (admin only) ── */}
+      {activeSubTab === "leave" && isAdmin && (
+        <div>
+          {/* Filter pills */}
+          <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
+            {["pending", "approved", "rejected", "all"].map(f => (
+              <button
+                key={f}
+                type="button"
+                onClick={() => setLeaveFilter(f)}
+                style={{
+                  padding: "6px 14px", borderRadius: 20, fontSize: 12, fontWeight: 700, cursor: "pointer",
+                  border: leaveFilter === f ? "none" : "1px solid var(--border2)",
+                  background: leaveFilter === f
+                    ? f === "pending" ? "#f59e0b" : f === "approved" ? "#10b981" : f === "rejected" ? "#ef4444" : "var(--primary)"
+                    : "var(--bg3)",
+                  color: leaveFilter === f ? "#fff" : "var(--text2)"
+                }}
+              >
+                {f.charAt(0).toUpperCase() + f.slice(1)}
+              </button>
+            ))}
+            <span style={{ marginLeft: "auto", fontSize: 12, color: "var(--text2)", alignSelf: "center" }}>
+              {leaveRequests.filter(r => leaveFilter === "all" || r.status === leaveFilter).length} request(s)
+            </span>
+          </div>
+
+          {leaveRequests.filter(r => leaveFilter === "all" || r.status === leaveFilter).length === 0 ? (
+            <div className="empty">No {leaveFilter === "all" ? "" : leaveFilter + " "}leave requests.</div>
+          ) : (
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              {leaveRequests
+                .filter(r => leaveFilter === "all" || r.status === leaveFilter)
+                .map(lr => {
+                  const statusColor = { pending: "#f59e0b", approved: "#10b981", rejected: "#ef4444" }[lr.status] || "#6366f1";
+                  const statusBg   = { pending: "rgba(245,158,11,.12)", approved: "rgba(16,185,129,.12)", rejected: "rgba(239,68,68,.12)" }[lr.status] || "rgba(99,102,241,.12)";
+                  return (
+                    <div key={lr.id} style={{
+                      background: "var(--bg2)", border: "1px solid var(--border1)",
+                      borderRadius: 10, padding: "14px 16px",
+                      display: "flex", alignItems: "flex-start", gap: 16, flexWrap: "wrap"
+                    }}>
+                      {/* Employee info */}
+                      <div style={{ flex: 1, minWidth: 180 }}>
+                        <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 2 }}>{lr.employee_name}</div>
+                        <div style={{ fontSize: 12, color: "var(--text2)" }}>{lr.employee_email}</div>
+                      </div>
+
+                      {/* Leave details */}
+                      <div style={{ flex: 2, minWidth: 200 }}>
+                        <div style={{ fontWeight: 600, fontSize: 13, marginBottom: 3 }}>
+                          {lr.leave_type.charAt(0).toUpperCase() + lr.leave_type.slice(1)} Leave
+                          <span style={{ marginLeft: 6, fontWeight: 400, color: "var(--text2)", fontSize: 12 }}>
+                            ({lr.days_count} day{Number(lr.days_count) > 1 ? "s" : ""})
+                          </span>
+                        </div>
+                        <div style={{ fontSize: 12, color: "var(--text2)", marginBottom: 4 }}>
+                          {new Date(lr.from_date).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
+                          {" → "}
+                          {new Date(lr.to_date).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
+                        </div>
+                        {lr.reason && (
+                          <div style={{ fontSize: 12, color: "var(--text2)", fontStyle: "italic" }}>"{lr.reason}"</div>
+                        )}
+                        {lr.reviewer_name && (
+                          <div style={{ fontSize: 11, color: "var(--text2)", marginTop: 3 }}>
+                            Reviewed by {lr.reviewer_name}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Status badge + actions */}
+                      <div style={{ display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}>
+                        <span style={{
+                          background: statusBg, color: statusColor,
+                          padding: "4px 12px", borderRadius: 20, fontSize: 11, fontWeight: 700, whiteSpace: "nowrap"
+                        }}>
+                          {lr.status.charAt(0).toUpperCase() + lr.status.slice(1)}
+                        </span>
+
+                        {lr.status === "pending" && (
+                          <>
+                            <button
+                              type="button"
+                              disabled={reviewingId === lr.id}
+                              onClick={() => handleLeaveAction(lr.id, "approved")}
+                              title="Approve"
+                              style={{
+                                background: "rgba(16,185,129,.15)", color: "#10b981",
+                                border: "1px solid rgba(16,185,129,.3)",
+                                borderRadius: 8, padding: "6px 12px", cursor: "pointer",
+                                fontSize: 12, fontWeight: 700, display: "inline-flex", alignItems: "center", gap: 4
+                              }}
+                            >
+                              <ThumbsUp size={13} /> Approve
+                            </button>
+                            <button
+                              type="button"
+                              disabled={reviewingId === lr.id}
+                              onClick={() => handleLeaveAction(lr.id, "rejected")}
+                              title="Reject"
+                              style={{
+                                background: "rgba(239,68,68,.12)", color: "#ef4444",
+                                border: "1px solid rgba(239,68,68,.3)",
+                                borderRadius: 8, padding: "6px 12px", cursor: "pointer",
+                                fontSize: 12, fontWeight: 700, display: "inline-flex", alignItems: "center", gap: 4
+                              }}
+                            >
+                              <ThumbsDown size={13} /> Reject
+                            </button>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+            </div>
+          )}
         </div>
       )}
     </div>
