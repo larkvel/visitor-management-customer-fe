@@ -5,7 +5,9 @@ import CompanyDashboard from "./components/CompanyDashboard";
 import LandingPage from "./components/LandingPage";
 import Login from "./components/Login";
 import ScanStatusPage from "./components/ScanStatusPage";
-import { ClipboardList, Settings } from "lucide-react";
+import AttendanceDashboard from "./components/AttendanceDashboard";
+import PayrollDashboard from "./components/PayrollDashboard";
+import { ClipboardList, Settings, CalendarCheck, CircleDollarSign } from "lucide-react";
 import { toDateTimeLocal, toIso } from "./utils/helpers";
 import "./styles.css";
 
@@ -18,7 +20,7 @@ function getSubdomain() {
 }
 
 const emptyVisit = { locationId: "", hostId: "", hostUserId: "", hostName: "", hostEmail: "", visitorName: "", visitorEmail: "", visitorPhone: "", purpose: "", expectedAt: "" };
-const emptyUser = { fullName: "", email: "", username: "", password: "", role: "executive" };
+const emptyUser = { fullName: "", email: "", username: "", password: "", role: "executive", biometricId: "", salaryType: "monthly", salaryRate: 0, paidLeavesLimit: 1.5 };
 const emptyLocation = { name: "", address: "" };
 const emptyHost = { fullName: "", email: "", department: "" };
 
@@ -116,6 +118,14 @@ function DashboardApp({ session, onLogout }) {
     setError("");
     try {
       await api.changeUserRole(userId, newRole);
+      await loadData();
+    } catch (err) { setError(err.message); }
+  }
+
+  async function handleUserUpdate(userId, payload) {
+    setError("");
+    try {
+      await api.updateUserDetails(userId, payload);
       await loadData();
     } catch (err) { setError(err.message); }
   }
@@ -218,6 +228,22 @@ function DashboardApp({ session, onLogout }) {
         >
           <ClipboardList size={16} /> Visitor Log
         </button>
+        {session.user.attendanceEnabled && (
+          <button 
+            className={`sub-nav-btn ${activePage === "attendance" ? "active" : ""}`}
+            onClick={() => setActivePage("attendance")}
+          >
+            <CalendarCheck size={16} /> Attendance
+          </button>
+        )}
+        {session.user.payrollEnabled && (
+          <button 
+            className={`sub-nav-btn ${activePage === "payroll" ? "active" : ""}`}
+            onClick={() => setActivePage("payroll")}
+          >
+            <CircleDollarSign size={16} /> Payroll
+          </button>
+        )}
         {activeUser && (activeUser.role === "company_admin" || activeUser.role === "platform_admin") && (
           <button 
             className={`sub-nav-btn ${activePage === "setup" ? "active" : ""}`}
@@ -230,42 +256,64 @@ function DashboardApp({ session, onLogout }) {
 
       <div className="dash-body">
         {error && <div className="alert">{error}</div>}
-        <CompanyDashboard
-          activeUser={activeUser}
-          activeUserId={session.user.id}
-          dashboard={dashboard}
-          editingVisitId={editingVisitId}
-          form={visitForm}
-          hosts={hosts}
-          locations={locations}
-          selectedCompanyId={companyId}
-          companies={[{ id: companyId, name: session.user.companyName }]}
-          userForm={userForm}
-          users={users}
-          visits={visits}
-          locationForm={locationForm}
-          onLocationFormChange={updateLocationForm}
-          onLocationSubmit={submitLocation}
-          hostForm={hostForm}
-          onHostFormChange={updateHostForm}
-          onHostSubmit={submitHost}
-          startDate={startDate}
-          endDate={endDate}
-          onStartDateChange={setStartDate}
-          onEndDateChange={setEndDate}
-          activePage={activePage}
-          onCompanyChange={() => {}}
-          onUserChange={() => {}}
-          onUserFormChange={updateUserForm}
-          onUserSubmit={submitUser}
-          onUserStatusToggle={handleUserStatusToggle}
-          onUserRoleChange={handleUserRoleChange}
-          onUserDelete={handleUserDelete}
-          onVisitChange={updateVisitForm}
-          onVisitEdit={startVisitEdit}
-          onVisitStatus={updateVisitStatus}
-          onVisitSubmit={submitVisit}
-        />
+
+        {activePage === "attendance" && (
+          <AttendanceDashboard 
+            companyId={companyId}
+            users={users}
+            session={session}
+            setError={setError}
+          />
+        )}
+
+        {activePage === "payroll" && (
+          <PayrollDashboard 
+            companyId={companyId}
+            users={users}
+            session={session}
+            setError={setError}
+          />
+        )}
+
+        {(activePage === "log" || activePage === "setup") && (
+          <CompanyDashboard
+            activeUser={activeUser}
+            activeUserId={session.user.id}
+            dashboard={dashboard}
+            editingVisitId={editingVisitId}
+            form={visitForm}
+            hosts={hosts}
+            locations={locations}
+            selectedCompanyId={companyId}
+            companies={[{ id: companyId, name: session.user.companyName }]}
+            userForm={userForm}
+            users={users}
+            visits={visits}
+            locationForm={locationForm}
+            onLocationFormChange={updateLocationForm}
+            onLocationSubmit={submitLocation}
+            hostForm={hostForm}
+            onHostFormChange={updateHostForm}
+            onHostSubmit={submitHost}
+            startDate={startDate}
+            endDate={endDate}
+            onStartDateChange={setStartDate}
+            onEndDateChange={setEndDate}
+            activePage={activePage}
+            onCompanyChange={() => {}}
+            onUserChange={() => {}}
+            onUserFormChange={updateUserForm}
+            onUserSubmit={submitUser}
+            onUserStatusToggle={handleUserStatusToggle}
+            onUserRoleChange={handleUserRoleChange}
+            onUserDelete={handleUserDelete}
+            onUserUpdate={handleUserUpdate}
+            onVisitChange={updateVisitForm}
+            onVisitEdit={startVisitEdit}
+            onVisitStatus={updateVisitStatus}
+            onVisitSubmit={submitVisit}
+          />
+        )}
       </div>
     </main>
   );

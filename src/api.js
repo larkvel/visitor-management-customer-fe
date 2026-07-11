@@ -47,9 +47,32 @@ export const api = {
   // Users
   listUsers: (companyId) => request(`/api/users?companyId=${companyId}`),
   createUser: (payload) => request("/api/users", { method: "POST", body: JSON.stringify(payload) }),
+  updateUserDetails: (userId, payload) => request(`/api/users/${userId}`, { method: "PUT", body: JSON.stringify(payload) }),
   toggleUserStatus: (userId, isActive) => request(`/api/users/${userId}/status`, { method: "PUT", body: JSON.stringify({ isActive }) }),
   changeUserRole: (userId, role) => request(`/api/users/${userId}/role`, { method: "PUT", body: JSON.stringify({ role }) }),
   deleteUser: (userId) => request(`/api/users/${userId}`, { method: "DELETE" }),
+
+  // Attendance
+  getAttendance: (companyId, startDate, endDate) => {
+    let url = `/api/attendance?companyId=${companyId}`;
+    if (startDate) url += `&startDate=${startDate}`;
+    if (endDate) url += `&endDate=${endDate}`;
+    return request(url);
+  },
+  getAttendanceStats: (companyId) => request(`/api/attendance/stats?companyId=${companyId}`),
+
+  // Payroll
+  getPayrollSettings: () => request("/api/payroll/settings"),
+  savePayrollSettings: (payload) => request("/api/payroll/settings", { method: "POST", body: JSON.stringify(payload) }),
+  calculatePayroll: (companyId, year, month) => request(`/api/payroll/calculate?companyId=${companyId}&year=${year}&month=${month}`),
+  savePayslip: (payload) => request("/api/payroll/slips", { method: "POST", body: JSON.stringify(payload) }),
+  getPayslips: (companyId, year, month, userId) => {
+    let url = `/api/payroll/slips?companyId=${companyId}`;
+    if (year) url += `&year=${year}`;
+    if (month) url += `&month=${month}`;
+    if (userId) url += `&userId=${userId}`;
+    return request(url);
+  },
 
   // Visits
   listVisits: (companyId, startDate, endDate) => {
