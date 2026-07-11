@@ -24,7 +24,7 @@ const emptyUser = { fullName: "", email: "", username: "", password: "", role: "
 const emptyLocation = { name: "", address: "" };
 const emptyHost = { fullName: "", email: "", department: "" };
 
-function DashboardApp({ session, onLogout }) {
+function DashboardApp({ session, onLogout, onSessionUpdate, subdomain }) {
   const companyId = session.user.companyId;
   const [locations, setLocations] = useState([]);
   const [hosts, setHosts] = useState([]);
@@ -60,6 +60,31 @@ function DashboardApp({ session, onLogout }) {
       locationId: prev.locationId || locs[0]?.id || "",
       hostId: prev.hostId || hs[0]?.id || ""
     }));
+
+    if (dash.company && onSessionUpdate) {
+      if (!dash.company.attendanceEnabled && activePage === "attendance") {
+        setActivePage("log");
+      }
+      if (!dash.company.payrollEnabled && activePage === "payroll") {
+        setActivePage("log");
+      }
+
+      if (
+        session.user.attendanceEnabled !== dash.company.attendanceEnabled ||
+        session.user.payrollEnabled !== dash.company.payrollEnabled
+      ) {
+        const updatedSession = {
+          ...session,
+          user: {
+            ...session.user,
+            attendanceEnabled: dash.company.attendanceEnabled,
+            payrollEnabled: dash.company.payrollEnabled
+          }
+        };
+        localStorage.setItem(`vm_session_${subdomain}`, JSON.stringify(updatedSession));
+        onSessionUpdate(updatedSession);
+      }
+    }
   }
 
   useEffect(() => {
@@ -323,7 +348,7 @@ function CompanyApp({ subdomain }) {
   function handleLogout() { localStorage.removeItem(sessionKey); setSession(null); }
 
   if (!session) return <Login subdomain={subdomain} onLogin={handleLogin} />;
-  return <DashboardApp session={session} onLogout={handleLogout} />;
+  return <DashboardApp session={session} onLogout={handleLogout} onSessionUpdate={setSession} subdomain={subdomain} />;
 }
 
 function App() {
