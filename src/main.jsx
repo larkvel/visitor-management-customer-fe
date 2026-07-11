@@ -263,6 +263,7 @@ function DashboardApp({ session, onLogout }) {
             users={users}
             session={session}
             setError={setError}
+            onReload={loadData}
           />
         )}
 

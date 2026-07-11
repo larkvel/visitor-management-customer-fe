@@ -102,15 +102,6 @@ export default function CompanyDashboard(props) {
                           <option value="viewer">Viewer</option>
                         </select>
                       </label>
-                      <label>Biometric ID <input name="biometricId" value={props.userForm.biometricId || ""} onChange={props.onUserFormChange} placeholder="e.g. 1001" /></label>
-                      <label>Salary Type
-                        <select name="salaryType" value={props.userForm.salaryType || "monthly"} onChange={props.onUserFormChange}>
-                          <option value="monthly">Monthly Base</option>
-                          <option value="daily">Daily Wage</option>
-                        </select>
-                      </label>
-                      <label>Salary Rate ($) <input name="salaryRate" type="number" min="0" value={props.userForm.salaryRate || 0} onChange={props.onUserFormChange} /></label>
-                      <label>Paid Leaves Limit <input name="paidLeavesLimit" type="number" step="0.5" min="0" value={props.userForm.paidLeavesLimit || 1.5} onChange={props.onUserFormChange} /></label>
                     </div>
                     <button className="primaryButton" type="submit"><UserCog size={15} /> Add User</button>
                   </form>
@@ -145,12 +136,7 @@ export default function CompanyDashboard(props) {
                             <div className="avatar-circle">{u.full_name?.charAt(0).toUpperCase()}</div>
                             <div className="list-item-main">
                               <div className="list-item-name">{u.full_name}</div>
-                              <div className="list-item-sub">
-                                {u.email}{u.username ? ` · @${u.username}` : ""}
-                                {u.biometric_id ? ` · Bio ID: ${u.biometric_id}` : ""}
-                                {u.salary_rate ? ` · ${u.salary_type === "daily" ? `Daily ($${u.salary_rate})` : `Monthly ($${u.salary_rate})`}` : ""}
-                                {u.paid_leaves_limit ? ` · ${u.paid_leaves_limit} Leaves` : ""}
-                              </div>
+                              <div className="list-item-sub">{u.email}{u.username ? ` · @${u.username}` : ""}</div>
                             </div>
                           </div>
                           <div className="list-item-badges" style={{ display: "flex", alignItems: "center", gap: 12 }}>
@@ -179,36 +165,26 @@ export default function CompanyDashboard(props) {
                               </select>
                             )}
                             <StatusBadge status={u.is_active ? "active" : "suspended"} />
-                            <div style={{ display: "flex", alignItems: "center", gap: 8, marginLeft: 8 }}>
-                              <button 
-                                type="button" 
-                                title="Edit User Details" 
-                                onClick={() => setEditingUser(u)}
-                                style={{ padding: 6, background: "transparent", border: "1px solid var(--border2)", borderRadius: 4, color: "var(--primary)", cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center" }}
-                              >
-                                <Edit3 size={13} />
-                              </button>
-                              {u.id !== props.activeUserId && (
-                                <>
-                                  <button 
-                                    type="button" 
-                                    title={u.is_active ? "Deactivate User" : "Activate User"} 
-                                    onClick={() => props.onUserStatusToggle(u.id, u.is_active)}
-                                    style={{ padding: "4px 8px", background: "transparent", border: "1px solid var(--border2)", borderRadius: 4, color: u.is_active ? "var(--warn)" : "var(--success)", cursor: "pointer", fontSize: 11, fontWeight: 600 }}
-                                  >
-                                    {u.is_active ? "Deactivate" : "Activate"}
-                                  </button>
-                                  <button 
-                                    type="button" 
-                                    title="Delete User" 
-                                    onClick={() => props.onUserDelete(u.id)}
-                                    style={{ padding: 6, background: "transparent", border: "1px solid var(--border2)", borderRadius: 4, color: "var(--danger)", cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center" }}
-                                  >
-                                    <Trash2 size={13} />
-                                  </button>
-                                </>
-                              )}
-                            </div>
+                            {u.id !== props.activeUserId && (
+                              <div style={{ display: "flex", alignItems: "center", gap: 8, marginLeft: 8 }}>
+                                <button 
+                                  type="button" 
+                                  title={u.is_active ? "Deactivate User" : "Activate User"} 
+                                  onClick={() => props.onUserStatusToggle(u.id, u.is_active)}
+                                  style={{ padding: "4px 8px", background: "transparent", border: "1px solid var(--border2)", borderRadius: 4, color: u.is_active ? "var(--warn)" : "var(--success)", cursor: "pointer", fontSize: 11, fontWeight: 600 }}
+                                >
+                                  {u.is_active ? "Deactivate" : "Activate"}
+                                </button>
+                                <button 
+                                  type="button" 
+                                  title="Delete User" 
+                                  onClick={() => props.onUserDelete(u.id)}
+                                  style={{ padding: 6, background: "transparent", border: "1px solid var(--border2)", borderRadius: 4, color: "var(--danger)", cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center" }}
+                                >
+                                  <Trash2 size={13} />
+                                </button>
+                              </div>
+                            )}
                           </div>
                         </div>
                       ))}
@@ -527,86 +503,6 @@ export default function CompanyDashboard(props) {
           </div>
         </section>
       </div>
-
-      {editingUser && (
-        <div className="modalOverlay" style={{ zIndex: 100 }}>
-          <div className="modalCard" style={{ maxWidth: 450 }}>
-            <h3>Edit User Details</h3>
-            <p style={{ fontSize: 12, color: "var(--text-sub)", marginBottom: 16 }}>
-              Update biometric settings and payroll rates for {editingUser.full_name}.
-            </p>
-            <form onSubmit={async (e) => {
-              e.preventDefault();
-              await props.onUserUpdate(editingUser.id, {
-                fullName: editingUser.full_name,
-                email: editingUser.email,
-                biometricId: editingUser.biometric_id || "",
-                salaryType: editingUser.salary_type || "monthly",
-                salaryRate: Number(editingUser.salary_rate || 0),
-                paidLeavesLimit: Number(editingUser.paid_leaves_limit || 0)
-              });
-              setEditingUser(null);
-            }}>
-              <div className="fieldGrid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-                <label style={{ gridColumn: "span 2" }}>Full Name
-                  <input 
-                    value={editingUser.full_name} 
-                    onChange={e => setEditingUser({ ...editingUser, full_name: e.target.value })} 
-                    required 
-                  />
-                </label>
-                <label style={{ gridColumn: "span 2" }}>Email
-                  <input 
-                    type="email" 
-                    value={editingUser.email} 
-                    onChange={e => setEditingUser({ ...editingUser, email: e.target.value })} 
-                    required 
-                  />
-                </label>
-                <label style={{ gridColumn: "span 2" }}>Biometric Code
-                  <input 
-                    value={editingUser.biometric_id || ""} 
-                    onChange={e => setEditingUser({ ...editingUser, biometric_id: e.target.value })} 
-                    placeholder="e.g. 1001" 
-                  />
-                </label>
-                <label>Salary Type
-                  <select 
-                    value={editingUser.salary_type || "monthly"} 
-                    onChange={e => setEditingUser({ ...editingUser, salary_type: e.target.value })}
-                  >
-                    <option value="monthly">Monthly Base</option>
-                    <option value="daily">Daily Wage</option>
-                  </select>
-                </label>
-                <label>Salary Rate ($)
-                  <input 
-                    type="number" 
-                    min="0"
-                    value={editingUser.salary_rate || 0} 
-                    onChange={e => setEditingUser({ ...editingUser, salary_rate: Number(e.target.value) })} 
-                    required 
-                  />
-                </label>
-                <label style={{ gridColumn: "span 2" }}>Monthly Paid Leaves Limit
-                  <input 
-                    type="number" 
-                    step="0.5" 
-                    min="0"
-                    value={editingUser.paid_leaves_limit || 0} 
-                    onChange={e => setEditingUser({ ...editingUser, paid_leaves_limit: Number(e.target.value) })} 
-                    required 
-                  />
-                </label>
-              </div>
-              <div style={{ display: "flex", justifyContent: "flex-end", gap: 10, marginTop: 24 }}>
-                <button type="button" className="secButton" onClick={() => setEditingUser(null)}>Cancel</button>
-                <button type="submit" className="primaryButton">Save Changes</button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
     </>
   );
 }
