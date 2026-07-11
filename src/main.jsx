@@ -244,14 +244,6 @@ function DashboardApp({ session, onLogout }) {
             <CircleDollarSign size={16} /> Payroll
           </button>
         )}
-        {activeUser && (activeUser.role === "company_admin" || activeUser.role === "platform_admin") && (
-          <button 
-            className={`sub-nav-btn ${activePage === "setup" ? "active" : ""}`}
-            onClick={() => setActivePage("setup")}
-          >
-            <Settings size={16} /> Setup
-          </button>
-        )}
       </div>
 
       <div className="dash-body">
@@ -276,7 +268,7 @@ function DashboardApp({ session, onLogout }) {
           />
         )}
 
-        {(activePage === "log" || activePage === "setup") && (
+        {activePage === "log" && (
           <CompanyDashboard
             activeUser={activeUser}
             activeUserId={session.user.id}

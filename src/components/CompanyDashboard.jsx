@@ -36,6 +36,7 @@ export default function CompanyDashboard(props) {
   const [statusFilter, setStatusFilter] = useState("all");
   const [userSearch, setUserSearch] = useState("");
   const [editingUser, setEditingUser] = useState(null);
+  const [showSetupModal, setShowSetupModal] = useState(false);
 
   const portalUsers = props.users.filter(u => u.username);
   const filteredUsers = portalUsers.filter(u => 
@@ -56,227 +57,235 @@ export default function CompanyDashboard(props) {
     }
   }
 
-  // ── SEPARATE PAGE: SETUP MODE ──
-  if (props.activePage === "setup") {
+  function renderSetupModal() {
+    if (!showSetupModal) return null;
     return (
-      <div style={{ maxWidth: 1000, margin: "0 auto" }}>
-        {canManageUsers && (
-          <div className="panel">
-            <div className="panelHeader">
-              <UserCog size={18} />
-              <h2>Setup & Configurations</h2>
+      <div className="modalOverlay" style={{ zIndex: 120 }}>
+        <div className="modalCard" style={{ maxWidth: 1000, width: "95%", padding: 28 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid var(--border)", paddingBottom: 14, marginBottom: 20 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <UserCog size={18} color="var(--primary)" />
+              <h2 style={{ fontSize: 16, fontWeight: 700, margin: 0 }}>Add User & Setup Configurations</h2>
             </div>
-
-            <div className="tab-bar">
-              {[
-                { key: "users",     label: `Portal Users (${props.users.filter(u => u.username).length})`, icon: <UserCog size={14} /> },
-                { key: "locations", label: `Locations (${props.locations.length})`,  icon: <MapPin size={14} /> },
-                { key: "hosts",     label: `Departments (${props.hosts.length})`,    icon: <Users size={14} /> },
-              ].map(tab => (
-                <button
-                  key={tab.key}
-                  type="button"
-                  className={`tab-btn ${adminTab === tab.key ? "active" : ""}`}
-                  onClick={() => setAdminTab(tab.key)}
-                >
-                  {tab.icon}{tab.label}
-                </button>
-              ))}
-            </div>
-
-            {/* Users tab */}
-            {adminTab === "users" && (
-              <div className="setup-split">
-                <div className="setup-split-left">
-                  <p className="section-label">Add New User</p>
-                  <form onSubmit={props.onUserSubmit} style={{ marginBottom: 20 }}>
-                    <div className="fieldGrid">
-                      <label>Full Name <input name="fullName" value={props.userForm.fullName} onChange={props.onUserFormChange} required /></label>
-                      <label>Email <input name="email" type="email" value={props.userForm.email} onChange={props.onUserFormChange} required /></label>
-                      <label>Username <input name="username" value={props.userForm.username} onChange={props.onUserFormChange} required minLength={3} placeholder="min 3 chars" /></label>
-                      <label>Password <input name="password" type="password" value={props.userForm.password} onChange={props.onUserFormChange} required minLength={8} placeholder="min 8 chars" /></label>
-                      <label>Role
-                        <select name="role" value={props.userForm.role} onChange={props.onUserFormChange}>
-                          <option value="company_admin">Company Admin</option>
-                          <option value="reception">Reception</option>
-                          <option value="executive">Executive</option>
-                          <option value="viewer">Viewer</option>
-                        </select>
-                      </label>
-                    </div>
-                    <button className="primaryButton" type="submit"><UserCog size={15} /> Add User</button>
-                  </form>
-                </div>
-
-                <div className="setup-split-right">
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
-                    <p className="section-label" style={{ margin: 0 }}>Team Members</p>
-                    <input 
-                      type="text" 
-                      placeholder="Search name…" 
-                      value={userSearch} 
-                      onChange={e => setUserSearch(e.target.value)}
-                      style={{ 
-                        background: "var(--bg3)", 
-                        border: "1px solid var(--border2)", 
-                        color: "var(--text)", 
-                        padding: "6px 12px", 
-                        borderRadius: "6px", 
-                        fontSize: "12px", 
-                        outline: "none",
-                        width: "160px",
-                        boxSizing: "border-box"
-                      }} 
-                    />
-                  </div>
-                  {filteredUsers.length > 0 ? (
-                    <div className="setup-list">
-                      {filteredUsers.map(u => (
-                        <div className="list-item" key={u.id}>
-                          <div style={{ display: "flex", alignItems: "center" }}>
-                            <div className="avatar-circle">{u.full_name?.charAt(0).toUpperCase()}</div>
-                            <div className="list-item-main">
-                              <div className="list-item-name">{u.full_name}</div>
-                              <div className="list-item-sub">{u.email}{u.username ? ` · @${u.username}` : ""}</div>
-                            </div>
-                          </div>
-                          <div className="list-item-badges" style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                            {u.id === props.activeUserId ? (
-                              <RoleBadge role={u.role} />
-                            ) : (
-                              <select
-                                value={u.role}
-                                onChange={e => props.onUserRoleChange(u.id, e.target.value)}
-                                style={{
-                                  background: "var(--bg3)",
-                                  border: "1px solid var(--border2)",
-                                  color: "var(--text)",
-                                  borderRadius: "4px",
-                                  padding: "3px 6px",
-                                  fontSize: "11px",
-                                  fontWeight: "600",
-                                  cursor: "pointer",
-                                  outline: "none"
-                                }}
-                              >
-                                <option value="company_admin">Company Admin</option>
-                                <option value="reception">Reception</option>
-                                <option value="executive">Executive</option>
-                                <option value="viewer">Viewer</option>
-                              </select>
-                            )}
-                            <StatusBadge status={u.is_active ? "active" : "suspended"} />
-                            {u.id !== props.activeUserId && (
-                              <div style={{ display: "flex", alignItems: "center", gap: 8, marginLeft: 8 }}>
-                                <button 
-                                  type="button" 
-                                  title={u.is_active ? "Deactivate User" : "Activate User"} 
-                                  onClick={() => props.onUserStatusToggle(u.id, u.is_active)}
-                                  style={{ padding: "4px 8px", background: "transparent", border: "1px solid var(--border2)", borderRadius: 4, color: u.is_active ? "var(--warn)" : "var(--success)", cursor: "pointer", fontSize: 11, fontWeight: 600 }}
-                                >
-                                  {u.is_active ? "Deactivate" : "Activate"}
-                                </button>
-                                <button 
-                                  type="button" 
-                                  title="Delete User" 
-                                  onClick={() => props.onUserDelete(u.id)}
-                                  style={{ padding: 6, background: "transparent", border: "1px solid var(--border2)", borderRadius: 4, color: "var(--danger)", cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center" }}
-                                >
-                                  <Trash2 size={13} />
-                                </button>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="empty">No team members found matching "{userSearch}".</div>
-                  )}
-                </div>
-              </div>
-            )}
-
-            {/* Locations tab */}
-            {adminTab === "locations" && (
-              <div className="setup-split">
-                <div className="setup-split-left">
-                  <p className="section-label">Add New Location</p>
-                  <form onSubmit={props.onLocationSubmit} style={{ marginBottom: 20 }}>
-                    <div className="fieldGrid">
-                      <label>Location Name * <input name="name" value={props.locationForm?.name ?? ""} onChange={props.onLocationFormChange} required placeholder="Head Office" /></label>
-                      <label>Address <input name="address" value={props.locationForm?.address ?? ""} onChange={props.onLocationFormChange} placeholder="Street, City" /></label>
-                    </div>
-                    <button className="primaryButton" type="submit"><MapPin size={15} /> Add Location</button>
-                  </form>
-                </div>
-
-                <div className="setup-split-right">
-                  <p className="section-label">Active Locations</p>
-                  {props.locations.length > 0 ? (
-                    <div className="setup-list">
-                      {props.locations.map(loc => (
-                        <div className="list-item" key={loc.id}>
-                          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                            <div className="avatar-circle" style={{ background: "rgba(99,102,241,.1)", borderColor: "var(--primary)" }}>
-                              <MapPin size={16} color="var(--primary)" />
-                            </div>
-                            <div className="list-item-main">
-                              <div className="list-item-name">{loc.name}</div>
-                              {loc.address && <div className="list-item-sub">{loc.address}</div>}
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="empty">No locations yet. Add one above.</div>
-                  )}
-                </div>
-              </div>
-            )}
-
-            {/* Departments tab */}
-            {adminTab === "hosts" && (
-              <div className="setup-split">
-                <div className="setup-split-left">
-                  <p className="section-label">Add New Department</p>
-                  <form onSubmit={props.onHostSubmit} style={{ marginBottom: 20 }}>
-                    <div className="fieldGrid">
-                      <label>Department Name * <input name="department" value={props.hostForm?.department ?? ""} onChange={props.onHostFormChange} required placeholder="e.g. Engineering" /></label>
-                      <label>Department Head Name * <input name="fullName" value={props.hostForm?.fullName ?? ""} onChange={props.onHostFormChange} required placeholder="John Doe" /></label>
-                      <label>Head Email * <input name="email" type="email" value={props.hostForm?.email ?? ""} onChange={props.onHostFormChange} required placeholder="head@company.com" /></label>
-                    </div>
-                    <button className="primaryButton" type="submit"><Users size={15} /> Add Department</button>
-                  </form>
-                </div>
-
-                <div className="setup-split-right">
-                  <p className="section-label">Departments</p>
-                  {props.hosts.length > 0 ? (
-                    <div className="setup-list">
-                      {props.hosts.map(h => (
-                        <div className="list-item" key={h.id}>
-                          <div style={{ display: "flex", alignItems: "center" }}>
-                            <div className="avatar-circle">
-                              {(h.department || h.full_name || "D").charAt(0).toUpperCase()}
-                            </div>
-                            <div className="list-item-main">
-                              <div className="list-item-name">{h.department || "General"}</div>
-                              <div className="list-item-sub">Head: {h.full_name} · {h.email}</div>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="empty">No departments yet. Add departments who receive visitors.</div>
-                  )}
-                </div>
-              </div>
-            )}
+            <button 
+              type="button" 
+              className="secButton" 
+              onClick={() => setShowSetupModal(false)}
+              style={{ padding: "6px 12px", fontSize: 12, borderRadius: 6, width: "auto" }}
+            >
+              Close
+            </button>
           </div>
-        )}
+
+          <div className="tab-bar">
+            {[
+              { key: "users",     label: `Portal Users (${props.users.filter(u => u.username).length})`, icon: <UserCog size={14} /> },
+              { key: "locations", label: `Locations (${props.locations.length})`,  icon: <MapPin size={14} /> },
+              { key: "hosts",     label: `Departments (${props.hosts.length})`,    icon: <Users size={14} /> },
+            ].map(tab => (
+              <button
+                key={tab.key}
+                type="button"
+                className={`tab-btn ${adminTab === tab.key ? "active" : ""}`}
+                onClick={() => setAdminTab(tab.key)}
+              >
+                {tab.icon}{tab.label}
+              </button>
+            ))}
+          </div>
+
+          {/* Users tab */}
+          {adminTab === "users" && (
+            <div className="setup-split">
+              <div className="setup-split-left">
+                <p className="section-label">Add New User</p>
+                <form onSubmit={props.onUserSubmit} style={{ marginBottom: 20 }}>
+                  <div className="fieldGrid">
+                    <label>Full Name <input name="fullName" value={props.userForm.fullName} onChange={props.onUserFormChange} required /></label>
+                    <label>Email <input name="email" type="email" value={props.userForm.email} onChange={props.onUserFormChange} required /></label>
+                    <label>Username <input name="username" value={props.userForm.username} onChange={props.onUserFormChange} required minLength={3} placeholder="min 3 chars" /></label>
+                    <label>Password <input name="password" type="password" value={props.userForm.password} onChange={props.onUserFormChange} required minLength={8} placeholder="min 8 chars" /></label>
+                    <label>Role
+                      <select name="role" value={props.userForm.role} onChange={props.onUserFormChange}>
+                        <option value="company_admin">Company Admin</option>
+                        <option value="reception">Reception</option>
+                        <option value="executive">Executive</option>
+                        <option value="viewer">Viewer</option>
+                      </select>
+                    </label>
+                  </div>
+                  <button className="primaryButton" type="submit"><UserCog size={15} /> Add User</button>
+                </form>
+              </div>
+
+              <div className="setup-split-right">
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+                  <p className="section-label" style={{ margin: 0 }}>Team Members</p>
+                  <input 
+                    type="text" 
+                    placeholder="Search name…" 
+                    value={userSearch} 
+                    onChange={e => setUserSearch(e.target.value)}
+                    style={{ 
+                      background: "var(--bg3)", 
+                      border: "1px solid var(--border2)", 
+                      color: "var(--text)", 
+                      padding: "6px 12px", 
+                      borderRadius: "6px", 
+                      fontSize: "12px", 
+                      outline: "none",
+                      width: "160px",
+                      boxSizing: "border-box"
+                    }} 
+                  />
+                </div>
+                {filteredUsers.length > 0 ? (
+                  <div className="setup-list">
+                    {filteredUsers.map(u => (
+                      <div className="list-item" key={u.id}>
+                        <div style={{ display: "flex", alignItems: "center" }}>
+                          <div className="avatar-circle">{u.full_name?.charAt(0).toUpperCase()}</div>
+                          <div className="list-item-main">
+                            <div className="list-item-name">{u.full_name}</div>
+                            <div className="list-item-sub">{u.email}{u.username ? ` · @${u.username}` : ""}</div>
+                          </div>
+                        </div>
+                        <div className="list-item-badges" style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                          {u.id === props.activeUserId ? (
+                            <RoleBadge role={u.role} />
+                          ) : (
+                            <select
+                              value={u.role}
+                              onChange={e => props.onUserRoleChange(u.id, e.target.value)}
+                              style={{
+                                background: "var(--bg3)",
+                                border: "1px solid var(--border2)",
+                                color: "var(--text)",
+                                borderRadius: "4px",
+                                padding: "3px 6px",
+                                fontSize: "11px",
+                                fontWeight: "600",
+                                cursor: "pointer",
+                                outline: "none"
+                              }}
+                            >
+                              <option value="company_admin">Company Admin</option>
+                              <option value="reception">Reception</option>
+                              <option value="executive">Executive</option>
+                              <option value="viewer">Viewer</option>
+                            </select>
+                          )}
+                          <StatusBadge status={u.is_active ? "active" : "suspended"} />
+                          {u.id !== props.activeUserId && (
+                            <div style={{ display: "flex", alignItems: "center", gap: 8, marginLeft: 8 }}>
+                              <button 
+                                type="button" 
+                                title={u.is_active ? "Deactivate User" : "Activate User"} 
+                                onClick={() => props.onUserStatusToggle(u.id, u.is_active)}
+                                style={{ padding: "4px 8px", background: "transparent", border: "1px solid var(--border2)", borderRadius: 4, color: u.is_active ? "var(--warn)" : "var(--success)", cursor: "pointer", fontSize: 11, fontWeight: 600 }}
+                              >
+                                {u.is_active ? "Deactivate" : "Activate"}
+                              </button>
+                              <button 
+                                type="button" 
+                                title="Delete User" 
+                                onClick={() => props.onUserDelete(u.id)}
+                                style={{ padding: 6, background: "transparent", border: "1px solid var(--border2)", borderRadius: 4, color: "var(--danger)", cursor: "pointer", display: "inline-flex", alignItems: "center", justifycontent: "center" }}
+                              >
+                                <Trash2 size={13} />
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="empty">No team members found matching "{userSearch}".</div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Locations tab */}
+          {adminTab === "locations" && (
+            <div className="setup-split">
+              <div className="setup-split-left">
+                <p className="section-label">Add New Location</p>
+                <form onSubmit={props.onLocationSubmit} style={{ marginBottom: 20 }}>
+                  <div className="fieldGrid">
+                    <label>Location Name * <input name="name" value={props.locationForm?.name ?? ""} onChange={props.onLocationFormChange} required placeholder="Head Office" /></label>
+                    <label>Address <input name="address" value={props.locationForm?.address ?? ""} onChange={props.onLocationFormChange} placeholder="Street, City" /></label>
+                  </div>
+                  <button className="primaryButton" type="submit"><MapPin size={15} /> Add Location</button>
+                </form>
+              </div>
+
+              <div className="setup-split-right">
+                <p className="section-label">Active Locations</p>
+                {props.locations.length > 0 ? (
+                  <div className="setup-list">
+                    {props.locations.map(loc => (
+                      <div className="list-item" key={loc.id}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                          <div className="avatar-circle" style={{ background: "rgba(99,102,241,.1)", borderColor: "var(--primary)" }}>
+                            <MapPin size={16} color="var(--primary)" />
+                          </div>
+                          <div className="list-item-main">
+                            <div className="list-item-name">{loc.name}</div>
+                            {loc.address && <div className="list-item-sub">{loc.address}</div>}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="empty">No locations yet. Add one above.</div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Departments tab */}
+          {adminTab === "hosts" && (
+            <div className="setup-split">
+              <div className="setup-split-left">
+                <p className="section-label">Add New Department</p>
+                <form onSubmit={props.onHostSubmit} style={{ marginBottom: 20 }}>
+                  <div className="fieldGrid">
+                    <label>Department Name * <input name="department" value={props.hostForm?.department ?? ""} onChange={props.onHostFormChange} required placeholder="e.g. Engineering" /></label>
+                    <label>Department Head Name * <input name="fullName" value={props.hostForm?.fullName ?? ""} onChange={props.onHostFormChange} required placeholder="John Doe" /></label>
+                    <label>Head Email * <input name="email" type="email" value={props.hostForm?.email ?? ""} onChange={props.onHostFormChange} required placeholder="head@company.com" /></label>
+                  </div>
+                  <button className="primaryButton" type="submit"><Users size={15} /> Add Department</button>
+                </form>
+              </div>
+
+              <div className="setup-split-right">
+                <p className="section-label">Departments</p>
+                {props.hosts.length > 0 ? (
+                  <div className="setup-list">
+                    {props.hosts.map(h => (
+                      <div className="list-item" key={h.id}>
+                        <div style={{ display: "flex", alignItems: "center" }}>
+                          <div className="avatar-circle">
+                            {(h.department || h.full_name || "D").charAt(0).toUpperCase()}
+                          </div>
+                          <div className="list-item-main">
+                            <div className="list-item-name">{h.department || "General"}</div>
+                            <div className="list-item-sub">Head: {h.full_name} · {h.email}</div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="empty">No departments yet. Add departments who receive visitors.</div>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     );
   }
@@ -305,7 +314,7 @@ export default function CompanyDashboard(props) {
 
             {props.locations.length === 0 && (
               <div className="warn-banner">
-                No locations set up yet. Add a location in the Setup tab above before registering visitors.
+                No locations set up yet. Click "Add User / Setup" in the Visitor Log to add locations before registering visitors.
               </div>
             )}
 
@@ -317,7 +326,7 @@ export default function CompanyDashboard(props) {
               <label>Location
                 <select name="locationId" value={props.form.locationId} onChange={props.onVisitChange} required disabled={props.locations.length === 0}>
                   {props.locations.length === 0
-                    ? <option value="">No locations — add one below</option>
+                    ? <option value="">No locations set up yet</option>
                     : props.locations.map(l => <option key={l.id} value={l.id}>{l.name}</option>)
                   }
                 </select>
@@ -410,9 +419,21 @@ export default function CompanyDashboard(props) {
 
         {/* ── Right column: Visitor log ── */}
         <section className="panel visitPanel">
-          <div className="panelHeader">
-            <DoorOpen size={18} />
-            <h2>Visitor Log</h2>
+          <div className="panelHeader" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <DoorOpen size={18} />
+              <h2>Visitor Log</h2>
+            </div>
+            {canManageUsers && (
+              <button 
+                type="button" 
+                className="primaryButton"
+                onClick={() => setShowSetupModal(true)}
+                style={{ padding: "6px 14px", fontSize: "12px", borderRadius: "6px", display: "inline-flex", alignItems: "center", gap: "6px", width: "auto" }}
+              >
+                <UserCog size={14} /> Add User
+              </button>
+            )}
           </div>
 
           <div className="log-filters">
@@ -429,6 +450,7 @@ export default function CompanyDashboard(props) {
                 <option value="onsite">Onsite (Checked In)</option>
                 <option value="completed">Completed (Checked Out)</option>
                 <option value="expected">Registered (Not Visited Yet)</option>
+                <option value="cancelled">Cancelled</option>
               </select>
             </div>
 
@@ -504,6 +526,9 @@ export default function CompanyDashboard(props) {
           </div>
         </section>
       </div>
+
+      {/* Render Setup Configurations Modal Overlay */}
+      {renderSetupModal()}
     </>
   );
 }

@@ -868,3 +868,34 @@ a { color: var(--primary); text-decoration: none; }
   .fieldGrid { grid-template-columns: 1fr; }
   .fieldGrid label.wide { grid-column: 1; }
 }
+
+/* ── Modal Overlay & Card ────────────────────────────────── */
+.modalOverlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(15, 17, 23, 0.75);
+  backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+.modalCard {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  width: 100%;
+  max-width: 550px;
+  padding: 28px;
+  box-shadow: var(--shadow-lg);
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+  animation: modalEnter 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+@keyframes modalEnter {
+  from { opacity: 0; transform: scale(0.95) translateY(10px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
